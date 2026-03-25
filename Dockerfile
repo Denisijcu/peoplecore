@@ -46,15 +46,17 @@ COPY . .
 
 # Configuración de WinRM y Usuarios (Tu lógica de setup.ps1)
 # Step 8/14 CORREGIDO
-RUN powershell -Command \
-    Expand-Archive -Path C:/openssh.zip -DestinationPath C:/ ; \
-    # Usamos rutas absolutas para evitar el 0x2
-    Move-Item -Path C:/OpenSSH-Win64 -Destination C:/OpenSSH ; \
-    # AQUÍ ESTÁ EL TRUCO: Ejecuta el script con su ruta completa
-    powershell.exe -ExecutionPolicy Bypass -File C:/OpenSSH/install-sshd.ps1 ; \
-    Set-Service -Name sshd -StartupType 'Automatic' ; \
-    # Configurar el config usando la ruta real
-    (Get-Content C:/OpenSSH/sshd_config_default) -replace '#PasswordAuthentication yes', 'PasswordAuthentication yes' | Set-Content C:/OpenSSH/sshd_config
+# Step 7/14: Descarga
+ADD https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.5.0.0p1-Beta/OpenSSH-Win64.zip C:/openssh.zip
+
+# Step 8/14: Extracción y Movimiento (Rutas fijas)
+RUN powershell -Command "Expand-Archive -Path C:/openssh.zip -DestinationPath C:/ ; Move-Item -Path C:/OpenSSH-Win64 -Destination C:/OpenSSH"
+
+# Step 9/14: Instalación (Usando el ejecutable directo)
+RUN powershell -ExecutionPolicy Bypass -File C:/OpenSSH/install-sshd.ps1
+
+# Step 10/14: Configuración y Servicio
+RUN powershell -Command "Set-Service -Name sshd -StartupType 'Automatic' ; (Get-Content C:/OpenSSH/sshd_config_default) -replace '#PasswordAuthentication yes', 'PasswordAuthentication yes' | Set-Content C:/OpenSSH/sshd_config"
 
 # ============================================
 # 6. PUERTOS Y ARRANQUE
