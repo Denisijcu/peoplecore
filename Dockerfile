@@ -23,22 +23,10 @@ WORKDIR C:/app
 # 4. INSTALAR OPENSSH SERVER Y WINRM
 # ============================================
 # Instalar OpenSSH Server y WinRM
-# Intentar instalar OpenSSH con Add-WindowsCapability (ignorar si ya existe)
-RUN Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0 -ErrorAction SilentlyContinue
+# OpenSSH es opcional - comentado
+# RUN Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0 -ErrorAction SilentlyContinue
 
-# Configurar SSH (solo si existe)
-RUN if (Get-Service sshd -ErrorAction SilentlyContinue) { \
-        Set-Service -Name sshd -StartupType 'Automatic'; \
-        Set-Service -Name ssh-agent -StartupType 'Automatic' \
-    }
-
-# Configurar sshd_config (si existe)
-RUN if (Test-Path C:\Windows\System32\OpenSSH\sshd_config) { \
-        (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PasswordAuthentication yes', 'PasswordAuthentication yes' | Set-Content C:\Windows\System32\OpenSSH\sshd_config; \
-        (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PermitEmptyPassword no', 'PermitEmptyPassword no' | Set-Content C:\Windows\System32\OpenSSH\sshd_config \
-    }
-
-# Habilitar WinRM
+# WinRM sí es necesario
 RUN Enable-PSRemoting -Force -SkipNetworkProfileCheck; \
     Set-Item WSMan:\localhost\Client\TrustedHosts -Value "*" -Force; \
     winrm set winrm/config/service/auth '@{Basic="true"}'; \
