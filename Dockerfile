@@ -15,22 +15,6 @@ RUN Start-Process C:/vc_redist.x64.exe -ArgumentList '/install /quiet /norestart
 ENV PATH="C:\Python311;C:\Python311\Scripts;C:\OpenSSH;${PATH}"
 WORKDIR C:/app
 
-# 2. OPENSSH - ESTA ES LA ÚNICA FORMA QUE NO DA ERROR 0x2
-# En lugar de ADD y Expand-Archive que falla, bajamos el MSI oficial si estuviera, 
-# pero como usamos el ZIP, lo hacemos en DOS RUNS SEPARADOS DE VERDAD.
-ADD https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.5.0.0p1-Beta/OpenSSH-Win64.zip C:/openssh.zip
-
-# RUN 1: SOLO EXTRAER
-RUN Expand-Archive -Path C:/openssh.zip -DestinationPath C:/
-
-# RUN 2: SOLO MOVER (Aquí es donde el 0x2 morirá porque la carpeta ya existe)
-RUN Move-Item -Path C:/OpenSSH-Win64 -Destination C:/OpenSSH ; Remove-Item -Force C:/openssh.zip
-
-# RUN 3: INSTALAR
-RUN powershell.exe -ExecutionPolicy Bypass -File C:/OpenSSH/install-sshd.ps1 ; \
-    Set-Service -Name sshd -StartupType 'Automatic'
-
-# 3. DEPENDENCIAS Y MODELO
 COPY requirements.txt .
 RUN C:\Python311\python.exe -m pip install --upgrade pip ; \
     C:\Python311\python.exe -m pip install --no-cache-dir -r requirements.txt
