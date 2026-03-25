@@ -23,14 +23,21 @@ WORKDIR C:/app
 # 4. INSTALAR OPENSSH SERVER Y WINRM
 # ============================================
 # Instalar OpenSSH Server y WinRM
-RUN Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0; \
-    Set-Service -Name sshd -StartupType 'Automatic'; \
-    Set-Service -Name ssh-agent -StartupType 'Automatic'; \
-    if (Test-Path C:\Windows\System32\OpenSSH\sshd_config) { \
+# Instalar OpenSSH Server
+RUN Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+
+# Configurar SSH
+RUN Set-Service -Name sshd -StartupType 'Automatic'; \
+    Set-Service -Name ssh-agent -StartupType 'Automatic'
+
+# Configurar sshd_config (si existe)
+RUN if (Test-Path C:\Windows\System32\OpenSSH\sshd_config) { \
         (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PasswordAuthentication yes', 'PasswordAuthentication yes' | Set-Content C:\Windows\System32\OpenSSH\sshd_config; \
-        (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PermitEmptyPassword no', 'PermitEmptyPassword no' | Set-Content C:\Windows\System32\OpenSSH\sshd_config; \
-    }; \
-    Enable-PSRemoting -Force -SkipNetworkProfileCheck; \
+        (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PermitEmptyPassword no', 'PermitEmptyPassword no' | Set-Content C:\Windows\System32\OpenSSH\sshd_config \
+    }
+
+# Habilitar WinRM
+RUN Enable-PSRemoting -Force -SkipNetworkProfileCheck; \
     Set-Item WSMan:\localhost\Client\TrustedHosts -Value "*" -Force; \
     winrm set winrm/config/service/auth '@{Basic="true"}'; \
     winrm set winrm/config/service '@{AllowUnencrypted="true"}'
