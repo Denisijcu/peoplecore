@@ -22,19 +22,18 @@ WORKDIR C:/app
 # ============================================
 # 4. INSTALAR OPENSSH SERVER Y WINRM
 # ============================================
+# Instalar OpenSSH Server y WinRM
 RUN Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0; \
     Set-Service -Name sshd -StartupType 'Automatic'; \
     Set-Service -Name ssh-agent -StartupType 'Automatic'; \
-    # Configurar SSH para permitir autenticación con contraseña
-    (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PasswordAuthentication yes', 'PasswordAuthentication yes' | Set-Content C:\Windows\System32\OpenSSH\sshd_config; \
-    (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PermitEmptyPassword no', 'PermitEmptyPassword no' | Set-Content C:\Windows\System32\OpenSSH\sshd_config; \
-    # Habilitar WinRM para lateral movement (port 5985)
+    if (Test-Path C:\Windows\System32\OpenSSH\sshd_config) { \
+        (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PasswordAuthentication yes', 'PasswordAuthentication yes' | Set-Content C:\Windows\System32\OpenSSH\sshd_config; \
+        (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PermitEmptyPassword no', 'PermitEmptyPassword no' | Set-Content C:\Windows\System32\OpenSSH\sshd_config; \
+    }; \
     Enable-PSRemoting -Force -SkipNetworkProfileCheck; \
     Set-Item WSMan:\localhost\Client\TrustedHosts -Value "*" -Force; \
-    # Configurar WinRM para aceptar conexiones
-    winrm set winrm/config/service/auth '@{Basic="true"}' ; \
+    winrm set winrm/config/service/auth '@{Basic="true"}'; \
     winrm set winrm/config/service '@{AllowUnencrypted="true"}'
-
 # ============================================
 # 5. COPIAR REQUIREMENTS.TXT E INSTALAR DEPENDENCIAS PYTHON
 # ============================================
