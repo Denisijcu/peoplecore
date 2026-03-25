@@ -1,39 +1,46 @@
-# ============================================
-# VERTEX CODERS - PEOPLECORE HTB (FIX FINAL)
-# ============================================
+# Usar Windows Server Core 2022
 FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
+# Instalar Python 3.11
+ADD https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe /python-installer.exe
+RUN C:\python-installer.exe /quiet InstallAllUsers=1 PrependPath=1 TargetDir=C:\Python311 && \
+    del C:\python-installer.exe
+
+# Configurar variables
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+ENV PATH="C:\Python311;C:\Python311\Scripts;${PATH}"
 
-# 1. PYTHON 3.11 Y VC REDIST (INSTALACIÓN DIRECTA)
-ADD https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe C:/python-installer.exe
-RUN Start-Process C:/python-installer.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1 TargetDir=C:\Python311' -Wait ; Remove-Item -Force C:/python-installer.exe
-
-ADD https://aka.ms/vs/17/release/vc_redist.x64.exe C:/vc_redist.x64.exe
-RUN Start-Process C:/vc_redist.x64.exe -ArgumentList '/install /quiet /norestart' -Wait ; Remove-Item -Force C:/vc_redist.x64.exe
-
-ENV PATH="C:\Python311;C:\Python311\Scripts;C:\OpenSSH;${PATH}"
 WORKDIR C:/app
 
+# Copiar requirements y instalar dependencias
 COPY requirements.txt .
-RUN C:\Python311\python.exe -m pip install --upgrade pip ; \
-    C:\Python311\python.exe -m pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --upgrade pip; \
+    pip install --no-cache-dir -r requirements.txt
 
-RUN C:\Python311\python.exe -c "from transformers import AutoTokenizer, AutoModelForCausalLM; \
-    AutoTokenizer.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct'); \
-    AutoModelForCausalLM.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct')"
+# Pre-descargar modelo
+RUN python -c "from transformers import AutoTokenizer, AutoModelForCausalLM; \
+    AutoTokenizer.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct', trust_remote_code=True); \
+    AutoModelForCausalLM.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct', torch_dtype=torch.float32, trust_remote_code=True).to('cpu')"
 
-# 4. CÓDIGO Y FLAGS
-COPY . .
-RUN powershell.exe -ExecutionPolicy Bypass -File ./setup.ps1
+# Copiar aplicación
+COPY app.py .
+COPY ai_engine.py .
+COPY ps_bridge.py .
+COPY templates/ ./templates/
+COPY smb/ ./smb/
 
+# Crear usuario y flags
 RUN $password = ConvertTo-SecureString 'HR@Nexus2024!' -AsPlainText -Force; \
-    New-LocalUser -Name 'hruser' -Password $password -FullName 'HR User'; \
-    Add-LocalGroupMember -Group 'Administrators' -Member 'hruser'; \
+    if (-not (Get-LocalUser -Name 'hruser' -ErrorAction SilentlyContinue)) { \
+        New-LocalUser -Name 'hruser' -Password $password -FullName 'HR User' -Description 'HR User Account' \
+    }; \
+    Add-LocalGroupMember -Group 'Users' -Member 'hruser'; \
     New-Item -ItemType Directory -Force -Path C:\Users\hruser; \
-    'HTB{user_placeholder_md5}' | Out-File -FilePath C:\Users\hruser\user.txt -Encoding ascii; \
-    'HTB{root_placeholder_md5}' | Out-File -FilePath C:\Users\Administrator\root.txt -Encoding ascii
+    New-Item -ItemType Directory -Force -Path C:\Users\Administrator; \
+    "HTB{user_placeholder_md5}" | Out-File -FilePath C:\Users\hruser\user.txt -Encoding ascii; \
+    "HTB{root_placeholder_md5}" | Out-File -FilePath C:\Users\Administrator\root.txt -Encoding ascii; \
+    icacls C:\Users\hruser\user.txt /grant hruser:R
 
-EXPOSE 8080 22 445 5985
+EXPOSE 8080
 
-CMD Start-Service sshd ; Start-Service WinRM ; C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app
+CMD waitress-serve --port=8080 app:app
