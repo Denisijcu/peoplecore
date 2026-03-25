@@ -31,9 +31,8 @@ RUN Expand-Archive -Path C:/openssh.zip -DestinationPath C:/ ; \
 # ============================================
 # 4. DEPENDENCIAS Y MODELO (IA)
 # ============================================
-COPY requirements.txt .
-RUN python -m pip install --upgrade pip; \
-    pip install --no-cache-dir -r requirements.txt
+RUN & C:\Python311\python.exe -m pip install --upgrade pip; \
+    & C:\Python311\python.exe -m pip install --no-cache-dir -r requirements.txt
 
 # Pre-descarga del modelo para que sea OFFLINE
 RUN python -c "from transformers import AutoTokenizer, AutoModelForCausalLM; \
