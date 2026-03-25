@@ -12,9 +12,6 @@ ENV PATH="C:\Python311;C:\Python311\Scripts;${PATH}"
 
 WORKDIR C:/app
 
-# Instalar WinRM (sin SSH)
-
-
 # Copiar requirements y instalar dependencias
 COPY requirements.txt .
 RUN python -m pip install --upgrade pip; \
@@ -44,6 +41,6 @@ RUN $password = ConvertTo-SecureString 'HR@Nexus2024!' -AsPlainText -Force; \
     "HTB{root_placeholder_md5}" | Out-File -FilePath C:\Users\Administrator\root.txt -Encoding ascii; \
     icacls C:\Users\hruser\user.txt /grant hruser:R
 
-EXPOSE 8080 5985
+EXPOSE 8080
 
-CMD Start-Service WinRM; waitress-serve --port=8080 app:app
+CMD waitress-serve --port=8080 app:app
