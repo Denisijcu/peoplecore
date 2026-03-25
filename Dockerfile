@@ -13,11 +13,7 @@ ENV PATH="C:\Python311;C:\Python311\Scripts;${PATH}"
 WORKDIR C:/app
 
 # Instalar WinRM (sin SSH)
-RUN Enable-PSRemoting -Force -SkipNetworkProfileCheck; \
-    Set-Item WSMan:\localhost\Client\TrustedHosts -Value "*" -Force; \
-    winrm set winrm/config/service/auth '@{Basic="true"}'; \
-    winrm set winrm/config/service '@{AllowUnencrypted="true"}'; \
-    winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="1024"}'
+
 
 # Copiar requirements y instalar dependencias
 COPY requirements.txt .
