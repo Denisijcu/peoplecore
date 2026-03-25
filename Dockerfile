@@ -35,12 +35,18 @@ RUN C:\Python311\python.exe -c "from transformers import AutoTokenizer, AutoMode
 COPY . .
 
 # 7. USUARIOS Y FLAGS (ESTÁNDAR DENIS/HTB)
-RUN powershell -Command "$password = ConvertTo-SecureString 'HR@Nexus2024!' -AsPlainText -Force; \
-    New-LocalUser -Name 'hruser' -Password $password -FullName 'HR User'; \
+RUN powershell -Command " \
+    $pass = ConvertTo-SecureString 'HR@Nexus2024!' -AsPlainText -Force; \
+    New-LocalUser -Name 'hruser' -Password $pass -FullName 'HR User'; \
     Add-LocalGroupMember -Group 'Administrators' -Member 'hruser'; \
-    New-Item -ItemType Directory -Force -Path C:\Users\hruser; \
-    'HTB{user_placeholder_md5}' | Out-File -FilePath C:\Users\hruser\user.txt -Encoding ascii; \
-    'HTB{root_placeholder_md5}' | Out-File -FilePath C:\Users\Administrator\root.txt -Encoding ascii"
+    # CREAR CARPETAS DE ESCRITORIO EXPLÍCITAMENTE \
+    New-Item -ItemType Directory -Force -Path C:\Users\hruser\Desktop; \
+    New-Item -ItemType Directory -Force -Path C:\Users\Administrator\Desktop; \
+    # TIRAR LAS FLAGS DONDE VAN \
+    'HTB{user_md5_hash}' | Out-File -FilePath C:\Users\hruser\Desktop\user.txt -Encoding ascii; \
+    'HTB{root_md5_hash}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii"
+    
+
 
 EXPOSE 8080 22 445 5985
 
