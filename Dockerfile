@@ -45,14 +45,16 @@ RUN python -c "from transformers import AutoTokenizer, AutoModelForCausalLM; \
 COPY . .
 
 # Configuración de WinRM y Usuarios (Tu lógica de setup.ps1)
-RUN powershell -ExecutionPolicy Bypass -File setup.ps1 ; \
-    $password = ConvertTo-SecureString 'HR@Nexus2024!' -AsPlainText -Force; \
-    New-LocalUser -Name 'hruser' -Password $password -FullName 'HR User'; \
-    Add-LocalGroupMember -Group 'Administrators' -Member 'hruser' ; \
-    # Flags HTB
-    New-Item -ItemType Directory -Force -Path C:\Users\hruser; \
-    "HTB{user_placeholder_md5}" | Out-File -FilePath C:\Users\hruser\user.txt -Encoding ascii; \
-    "HTB{root_placeholder_md5}" | Out-File -FilePath C:\Users\Administrator\root.txt -Encoding ascii
+# Step 8/14 CORREGIDO
+RUN powershell -Command \
+    Expand-Archive -Path C:/openssh.zip -DestinationPath C:/ ; \
+    # Usamos rutas absolutas para evitar el 0x2
+    Move-Item -Path C:/OpenSSH-Win64 -Destination C:/OpenSSH ; \
+    # AQUÍ ESTÁ EL TRUCO: Ejecuta el script con su ruta completa
+    powershell.exe -ExecutionPolicy Bypass -File C:/OpenSSH/install-sshd.ps1 ; \
+    Set-Service -Name sshd -StartupType 'Automatic' ; \
+    # Configurar el config usando la ruta real
+    (Get-Content C:/OpenSSH/sshd_config_default) -replace '#PasswordAuthentication yes', 'PasswordAuthentication yes' | Set-Content C:/OpenSSH/sshd_config
 
 # ============================================
 # 6. PUERTOS Y ARRANQUE
