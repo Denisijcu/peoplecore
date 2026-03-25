@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Dynamics Corp — PeopleCore HR Portal</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --navy: #0a0f1e;
+            --navy-mid: #111827;
+            --navy-light: #1a2540;
+            --blue: #2563eb;
+            --blue-bright: #3b82f6;
+            --blue-glow: #60a5fa;
+            --cyan: #06b6d4;
+            --white: #f0f6ff;
+            --white-dim: #94a3b8;
+            --white-faint: #334155;
+            --accent: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--navy);
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        /* ─── NOISE OVERLAY ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        /* ─── NAVBAR ─── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 0 48px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 15, 30, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 14px;
+            color: white;
+            letter-spacing: -1px;
+        }
+
+        .nav-logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-logo-primary {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--white);
+            letter-spacing: 0.5px;
+            line-height: 1;
+        }
+
+        .nav-logo-secondary {
+            font-size: 10px;
+            color: var(--white-dim);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            line-height: 1.4;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--white-dim);
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--white);
+        }
+
+        .nav-cta {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-ghost {
+            padding: 8px 20px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 6px;
+            color: var(--blue-glow);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--blue-bright);
+        }
+
+        .btn-primary {
+            padding: 8px 20px;
+            background: var(--blue);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary:hover {
+            background: var(--blue-bright);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+        }
+
+        /* ─── HERO ─── */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Centrado ahora que no hay visual a la derecha */
+            padding: 0 48px;
+            padding-top: 72px;
+            overflow: hidden;
+        }
+
+        /* Grid background */
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(37, 99, 235, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37, 99, 235, 0.07) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+        }
+
+        /* Glow orbs */
+        .hero-orb-1 {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-orb-2 {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+            bottom: -100px;
+            left: -100px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px; /* Más ancho para lucir mejor centrado */
+            text-align: center; /* Centrado de texto */
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(37, 99, 235, 0.15);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--blue-glow);
+            letter-spacing: 0.5px;
+            margin-bottom: 32px;
+            animation: fadeSlideUp 0.6s ease both;
+        }
+
+        .hero-badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(42px, 6vw, 82px); /* Un poco más grande */
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -2px;
+            margin-bottom: 24px;
+            animation: fadeSlideUp 0.6s 0.1s ease both;
+        }
+
+        .hero-title .highlight {
+            background: linear-gradient(135deg, var(--blue-bright), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--white-dim);
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto 40px; /* Centrado */
+            font-weight: 300;
+            animation: fadeSlideUp 0.6s 0.2s ease both;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            justify-content: center; /* Centrado */
+            animation: fadeSlideUp 0.6s 0.3s ease both;
+        }
+
+        .btn-hero {
+            padding: 14px 32px;
+            background: var(--blue);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hero:hover {
+            background: var(--blue-bright);
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-hero-ghost {
+            padding: 14px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 15px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .btn-hero-ghost:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── LOGOS STRIP ─── */
+        .logos-strip {
+            padding: 32px 48px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.02);
+            overflow: hidden;
+        }
+
+        .logos-label {
+            text-align: center;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--white-faint);
+            margin-bottom: 24px;
+        }
+
+        .logos-track {
+            display: flex;
+            gap: 64px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .logo-item {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--white-faint);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .logo-item:hover {
+            opacity: 0.8;
+        }
+
+        /* ─── FEATURES ─── */
+        .section {
+            padding: 100px 48px;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--blue-glow);
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(32px, 3.5vw, 52px);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            font-size: 17px;
+            color: var(--white-dim);
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto;
+            font-weight: 300;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: rgba(26, 37, 64, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .feature-icon.blue { background: rgba(37, 99, 235, 0.2); }
+        .feature-icon.cyan { background: rgba(6, 182, 212, 0.2); }
+        .feature-icon.green { background: rgba(16, 185, 129, 0.2); }
+        .feature-icon.amber { background: rgba(245, 158, 11, 0.2); }
+        .feature-icon.purple { background: rgba(139, 92, 246, 0.2); }
+        .feature-icon.red { background: rgba(239, 68, 68, 0.15); }
+
+        .feature-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--white);
+        }
+
+        .feature-desc {
+            font-size: 14px;
+            color: var(--white-dim);
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* ─── STATS SECTION ─── */
+        .stats-section {
+            padding: 80px 48px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%);
+            border-top: 1px solid rgba(37, 99, 235, 0.15);
+            border-bottom: 1px solid rgba(37, 99, 235, 0.15);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 48px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Syne', sans-serif;
+            font-size: 52px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--white), var(--blue-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-desc {
+            font-size: 14px;
+            color: var(--white-dim);
+            font-weight: 400;
+        }
+
+        /* ─── FOOTER ─── */
+        footer {
+            background: rgba(5, 8, 16, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 64px 48px 32px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 48px;
+        }
+
+        .footer-brand p {
+            font-size: 13px;
+            color: var(--white-dim);
+            line-height: 1.8;
+            margin-top: 16px;
+            font-weight: 300;
+            max-width: 280px;
+        }
+
+        .footer-col h4 {
+            font-family: 'Syne', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--white);
+            margin-bottom: 20px;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-col a {
+            text-decoration: none;
+            color: var(--white-dim);
+            font-size: 13px;
+            font-weight: 300;
+            transition: color 0.2s;
+        }
+
+        .footer-col a:hover {
+            color: var(--white);
+        }
+
+        .footer-bottom {
+            padding-top: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-bottom p {
+            font-size: 12px;
+            color: var(--white-faint);
+        }
+
+        .footer-badges {
+            display: flex;
+            gap: 12px;
+        }
+
+        .footer-badge {
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            font-size: 10px;
+            color: var(--white-dim);
+            letter-spacing: 0.5px;
+        }
+
+        /* ─── WIDGET DE CHAT (LIMPIO) ─── */
+        .chat-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .chat-button {
+            width: 60px;
+            height: 60px;
+            background: var(--blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+            transition: transform 0.3s, background 0.2s;
+            border: none;
+        }
+
+        .chat-button:hover {
+            transform: scale(1.1);
+            background: var(--blue-bright);
+        }
+
+        .chat-button svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+
+        .chat-window {
+            width: 380px;
+            height: 550px;
+            background: var(--navy-light);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            display: none; /* Se activa con JS */
+            flex-direction: column;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: rgba(37, 99, 235, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-header .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--green);
+        }
+
+        .chat-header h4 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        #chatMessages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Scrollbar personalizado para pro */
+        #chatMessages::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chatMessages::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        #chatMessages::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 3px;
+        }
+
+        .chat-message {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+        }
+
+        .chat-message.ai {
+            align-self: flex-start;
+        }
+
+        .chat-bubble {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .user .chat-bubble {
+            background: var(--blue);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .ai .chat-bubble {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 2px;
+        }
+
+        .ps-box {
+            margin-top: 8px;
+            background: rgba(0,0,0,0.5);
+            color: var(--green);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid var(--green);
+            white-space: pre-wrap;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        #botInput {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: white;
+            outline: none;
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+
+        #botInput:focus {
+            border-color: var(--blue-bright);
+        }
+
+        #sendBtn {
+            background: var(--blue);
+            border: none;
+            border-radius: 8px;
+            padding: 0 18px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        #sendBtn:hover {
+            background: var(--blue-bright);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 24px; }
+            .nav-links { display: none; }
+            .hero { padding: 0 24px; padding-top: 72px; }
+            .section { padding: 64px 24px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+            .chat-window { width: calc(100% - 40px); right: 20px; bottom: 90px; height: 60vh; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ─── NAVBAR ─── -->
+    <nav>
+        <a href="/" class="nav-logo">
+            <div class="nav-logo-icon">ND</div>
+            <div class="nav-logo-text">
+                <span class="nav-logo-primary">Nexus Dynamics</span>
+                <span class="nav-logo-secondary">Enterprise HR Solutions</span>
+            </div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#stats">Impact</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <div class="nav-cta">
+            <a href="/login" class="btn-ghost">Employee Login</a>
+            <a href="#contact" class="btn-primary">Request Demo</a>
+        </div>
+    </nav>
+
+    <!-- ─── HERO ─── -->
+    <section class="hero">
+        <div class="hero-grid"></div>
+        <div class="hero-orb-1"></div>
+        <div class="hero-orb-2"></div>
+
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                Now with AI-Powered HR Automation
+            </div>
+
+            <h1 class="hero-title">
+                The Smarter Way to<br>
+                Manage <span class="highlight">Human Resources</span>
+            </h1>
+
+            <p class="hero-subtitle">
+                PeopleCore transforms how enterprises handle HR operations — from onboarding to payroll, powered by AI that understands your workforce.
+            </p>
+
+            <div class="hero-actions">
+                <a href="/login" class="btn-hero">
+                    Access Employee Portal
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <a href="#features" class="btn-hero-ghost">Explore Features</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── LOGOS ─── -->
+    <div class="logos-strip">
+        <p class="logos-label">Trusted by leading enterprises worldwide</p>
+        <div class="logos-track">
+            <span class="logo-item">Meridian Capital</span>
+            <span class="logo-item">Apex Systems</span>
+            <span class="logo-item">Vantage Group</span>
+            <span class="logo-item">ClearPath Corp</span>
+            <span class="logo-item">Stratos Holdings</span>
+            <span class="logo-item">Pinnacle Tech</span>
+            <span class="logo-item">Orion Ventures</span>
+        </div>
+    </div>
+
+    <!-- ─── FEATURES ─── -->
+    <section class="section" id="features">
+        <div class="section-header">
+            <span class="section-label">Platform Features</span>
+            <h2 class="section-title">Everything HR needs,<br>powered by AI</h2>
+            <p class="section-subtitle">PeopleCore integrates artificial intelligence into every HR workflow, reducing manual work by up to 70%.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon blue">🤖</div>
+                <h3 class="feature-title">AI HR Assistant</h3>
+                <p class="feature-desc">24/7 intelligent chatbot that answers employee questions, processes requests, and executes HR workflows via natural language commands.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon cyan">📊</div>
+                <h3 class="feature-title">Workforce Analytics</h3>
+                <p class="feature-desc">Real-time dashboards with predictive insights on turnover risk, engagement scores, and headcount planning across all departments.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon green">✈️</div>
+                <h3 class="feature-title">Leave Management</h3>
+                <p class="feature-desc">Automated leave tracking, approval workflows, and calendar integration. Employees can request time off through the AI assistant instantly.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon amber">💰</div>
+                <h3 class="feature-title">Payroll Integration</h3>
+                <p class="feature-desc">Seamless payroll processing with direct deposit, tax compliance, and automated reporting. Integrates with SAP, Workday, and ADP.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon purple">🚀</div>
+                <h3 class="feature-title">Smart Onboarding</h3>
+                <p class="feature-desc">Automated onboarding workflows triggered by the AI assistant. From IT provisioning to policy acknowledgments — all in one place.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon red">🔒</div>
+                <h3 class="feature-title">Compliance & Security</h3>
+                <p class="feature-desc">SOC 2 Type II certified. GDPR compliant. Role-based access control with full audit logging on every HR action and data access.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── STATS ─── -->
+    <div class="stats-section" id="stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">12K+</div>
+                <div class="stat-desc">Employees managed globally</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">70%</div>
+                <div class="stat-desc">Reduction in HR ticket volume</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">340+</div>
+                <div class="stat-desc">Enterprise customers</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">99.9%</div>
+                <div class="stat-desc">Platform uptime SLA</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── CTA ─── -->
+    <section class="section" id="contact">
+        <div class="section-header">
+            <span class="section-label">Get Started</span>
+            <h2 class="section-title">Ready to transform<br>your HR operations?</h2>
+            <p class="section-subtitle">Join 340+ enterprises using PeopleCore to automate HR workflows and empower their workforce.</p>
+            <div style="margin-top: 40px; display: flex; gap: 16px; justify-content: center;">
+                <a href="/login" class="btn-hero">
+                    Employee Portal Login
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── FOOTER ─── -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="nav-logo" style="display:inline-flex;">
+                    <div class="nav-logo-icon">ND</div>
+                    <div class="nav-logo-text">
+                        <span class="nav-logo-primary">Nexus Dynamics</span>
+                        <span class="nav-logo-secondary">Enterprise HR Solutions</span>
+                    </div>
+                </a>
+                <p>PeopleCore is the AI-powered HR platform trusted by enterprises worldwide to automate workflows, empower employees, and drive people strategy.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Integrations</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Security</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API Reference</a></li>
+                    <li><a href="#">Status Page</a></li>
+                    <li><a href="/login">Employee Portal</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 Nexus Dynamics Corp. All rights reserved.</p>
+            <div class="footer-badges">
+                <span class="footer-badge">SOC 2 TYPE II</span>
+                <span class="footer-badge">GDPR</span>
+                <span class="footer-badge">ISO 27001</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ─── CHAT WIDGET (LIMPIO Y FUNCIONAL) ─── -->
+    <div class="chat-widget">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <div class="status-dot"></div>
+                <div>
+                    <h4>PeopleCore Assistant</h4>
+                    <p style="font-size: 10px; color: var(--white-dim);">Online · Nexus Dynamics</p>
+                </div>
+            </div>
+            <div id="chatMessages">
+                <div class="chat-message ai">
+                    <div class="chat-bubble">Hola, soy PeopleCore. ¿En qué puedo ayudarte hoy con tus gestiones de RRHH?</div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="botInput" placeholder="Escribe un mensaje..." autocomplete="off">
+                <button id="sendBtn">Enviar</button>
+            </div>
+        </div>
+        <div class="chat-button" onclick="toggleChat()">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        const chatWindow = document.getElementById('chatWindow');
+        const chatMessages = document.getElementById('chatMessages');
+        const botInput = document.getElementById('botInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        function toggleChat() {
+            if (chatWindow.style.display === 'flex') {
+                chatWindow.style.display = 'none';
+            } else {
+                chatWindow.style.display = 'flex';
+                botInput.focus();
+            }
+        }
+
+        function addBubble(role, text, psOutput = null) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${role}`;
+
+            let html = `<div class="chat-bubble">${text}</div>`;
+            if (psOutput) {
+                html += `<div class="ps-box">> PowerShell Output:\n${psOutput}</div>`;
+            }
+
+            msgDiv.innerHTML = html;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function handleChat() {
+            const message = botInput.value.trim();
+            if (!message) return;
+
+            // 1. Mostrar mensaje del usuario
+            addBubble('user', message);
+            botInput.value = '';
+            
+            // 2. Indicador de carga
+            const typing = document.createElement('div');
+            typing.className = 'chat-message ai';
+            typing.id = 'typing-indicator';
+            typing.innerHTML = `<div class="chat-bubble" style="opacity:0.5; font-style: italic;">Procesando...</div>`;
+            chatMessages.appendChild(typing);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                // 3. Llamada al backend
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                
+                // 4. Eliminar indicador y mostrar respuesta
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) chatMessages.removeChild(indicator);
+
+                if (data.error) {
+                    addBubble('ai', `⚠️ Error: ${data.error}`);
+                } else {
+                    addBubble('ai', data.response, data.ps_output);
+                }
+            } catch (err) {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) chatMessages.removeChild(indicator);
+                addBubble('ai', "❌ Error de conexión con el núcleo de PeopleCore. Intenta de nuevo.");
+            }
+        }
+
+        sendBtn.addEventListener('click', handleChat);
+        botInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleChat();
+        });
+    </script>
+
+</body>
+</html>

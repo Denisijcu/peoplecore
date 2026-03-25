@@ -1,0 +1,8 @@
+Flask==2.3.3
+transformers==4.36.2
+accelerate==0.25.0
+reportlab==4.0.7
+waitress==2.1.2
+protobuf==3.20.3
+reportlab==4.0.7
+
