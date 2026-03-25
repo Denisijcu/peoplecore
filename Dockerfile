@@ -24,17 +24,18 @@ WORKDIR C:/app
 # ============================================
 # Instalar OpenSSH Server y WinRM
 # Instalar OpenSSH Server
-RUN Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+# Instalar OpenSSH Server usando DISM (más estable)
+RUN dism /online /Enable-Feature /FeatureName:OpenSSH.Server /All /NoRestart
 
-# Configurar SSH
+# Configurar servicios SSH
 RUN Set-Service -Name sshd -StartupType 'Automatic'; \
     Set-Service -Name ssh-agent -StartupType 'Automatic'
 
-# Configurar sshd_config (si existe)
-RUN if (Test-Path C:\Windows\System32\OpenSSH\sshd_config) { \
-        (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PasswordAuthentication yes', 'PasswordAuthentication yes' | Set-Content C:\Windows\System32\OpenSSH\sshd_config; \
-        (Get-Content C:\Windows\System32\OpenSSH\sshd_config) -replace '#PermitEmptyPassword no', 'PermitEmptyPassword no' | Set-Content C:\Windows\System32\OpenSSH\sshd_config \
-    }
+# Configurar sshd_config (crear si no existe)
+RUN $configPath = 'C:\Windows\System32\OpenSSH\sshd_config'; \
+    if (-not (Test-Path $configPath)) { New-Item -Path $configPath -ItemType File -Force }; \
+    (Get-Content $configPath) -replace '#PasswordAuthentication yes', 'PasswordAuthentication yes' | Set-Content $configPath; \
+    (Get-Content $configPath) -replace '#PermitEmptyPassword no', 'PermitEmptyPassword no' | Set-Content $configPath
 
 # Habilitar WinRM
 RUN Enable-PSRemoting -Force -SkipNetworkProfileCheck; \
