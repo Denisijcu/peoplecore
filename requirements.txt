@@ -1,7 +1,8 @@
-Flask==2.3.3
+Flask==3.0.3
 transformers==4.48.0
-torch==2.9.0
+torch>=2.4.0
 accelerate==0.34.2
 reportlab==4.0.7
-waitress==2.1.2
-protobuf==3.20.3
+waitress==3.0.0
+protobuf==4.25.3
+sentencepiece
