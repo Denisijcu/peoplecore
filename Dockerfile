@@ -35,22 +35,18 @@ RUN C:\Python311\python.exe -c "import torch; from transformers import AutoToken
 COPY . .
 
 # 7. USUARIOS Y FLAGS (HTB Standard)
+# 7. USUARIOS Y FLAGS (HTB Standard)
 RUN powershell -Command " \
     $pass = ConvertTo-SecureString 'Welcome1!' -AsPlainText -Force; \
     New-LocalUser -Name 'jsmith' -Password $pass -FullName 'James Smith - HR Junior'; \
-    Add-LocalGroupMember -Group 'Remote Management Users' -Member 'jsmith'; \
+    Add-LocalGroupMember -Group 'Users' -Member 'jsmith'; \
     New-Item -ItemType Directory -Force -Path C:\Users\jsmith\Desktop; \
     New-Item -ItemType Directory -Force -Path C:\Users\Administrator\Desktop; \
     New-Item -ItemType Directory -Force -Path C:\HR-Docs; \
     # Plantar flags reales (MD5 Standard) \
     'HTB{6e8979e2c40c117d84878a8790325f6e}' | Out-File -FilePath C:\Users\jsmith\Desktop\user.txt -Encoding ascii; \
     'HTB{bfd7a04918e77c475d9e52c6f1082c5b}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii; \
-    'Nexus Dynamics Internal Policy v1.0' | Out-File -FilePath C:\HR-Docs\policy.txt -Encoding ascii; \
-    # Permisos para jsmith \
-    #$acl = Get-Acl C:\Users\jsmith\Desktop; \
-    #$rule = New-Object System.Security.AccessControl.FileSystemAccessRule('jsmith','FullControl','ContainerInherit,ObjectInherit','None','Allow'); \
-    #$acl.AddAccessRule($rule); \
-    #Set-Acl C:\Users\jsmith\Desktop $acl"
+    'Nexus Dynamics Internal Policy v1.0' | Out-File -FilePath C:\HR-Docs\policy.txt -Encoding ascii"
     
 # 8. Fallo Humano
 RUN powershell -Command " \
