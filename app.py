@@ -11,8 +11,8 @@ app.secret_key = "NexusDyn@2024!core"
 # Credenciales débiles — parte del puzzle 😈
 USERS = {
     "jsmith": "Welcome1!",
-    "mrodriguez": "HR2024!",
-    "admin": "NexusAdmin123!"
+    "admin": "NexusAdmin123!",
+    "administrator": "NexusAdmin2024!"
 }
 
 model_ready = False
