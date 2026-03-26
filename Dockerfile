@@ -36,8 +36,8 @@ COPY . .
 
 # 7. USUARIOS Y FLAGS
 RUN powershell -Command " \
-    $pass = ConvertTo-SecureString 'HR@Nexus2024!' -AsPlainText -Force; \
-    New-LocalUser -Name 'hruser' -Password $pass -FullName 'HR User'; \
+    $pass = ConvertTo-SecureString 'Welcome1!' -AsPlainText -Force; \
+    New-LocalUser -Name 'jsmith' -Password $pass -FullName 'HR User'; \
     Add-LocalGroupMember -Group 'Administrators' -Member 'hruser'; \
     New-Item -ItemType Directory -Force -Path C:\Users\hruser\Desktop; \
     New-Item -ItemType Directory -Force -Path C:\Users\Administrator\Desktop; \
