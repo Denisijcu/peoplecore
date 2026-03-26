@@ -47,10 +47,10 @@ RUN powershell -Command " \
     'HTB{bfd7a04918e77c475d9e52c6f1082c5b}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii; \
     'Nexus Dynamics Internal Policy v1.0' | Out-File -FilePath C:\HR-Docs\policy.txt -Encoding ascii; \
     # Permisos para jsmith \
-    $acl = Get-Acl C:\Users\jsmith\Desktop; \
-    $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('jsmith','FullControl','ContainerInherit,ObjectInherit','None','Allow'); \
-    $acl.AddAccessRule($rule); \
-    Set-Acl C:\Users\jsmith\Desktop $acl"
+    #$acl = Get-Acl C:\Users\jsmith\Desktop; \
+    #$rule = New-Object System.Security.AccessControl.FileSystemAccessRule('jsmith','FullControl','ContainerInherit,ObjectInherit','None','Allow'); \
+    #$acl.AddAccessRule($rule); \
+    #Set-Acl C:\Users\jsmith\Desktop $acl"
     
 # 8. Fallo Humano
 RUN powershell -Command " \
