@@ -52,7 +52,9 @@ RUN powershell -Command " \
 
 EXPOSE 8080 22 445 5985
 
-# 9. ARRANQUE (IGUAL QUE ANTES)
+# FIX SMB: Forzar arranque del servicio Server en el registro
+RUN reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer" /v Start /t REG_DWORD /d 2 /f
+RUN reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer" /v Type /t REG_DWORD /d 32 /f
 # 9. ARRANQUE (Activamos el servicio y el share al encender)
 CMD powershell -Command " \
     Start-Service sshd; \
