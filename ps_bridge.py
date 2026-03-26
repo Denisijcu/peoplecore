@@ -44,18 +44,22 @@ def run_powershell(command: str) -> str:
 
 def extract_ps_command(ai_response: str) -> str | None:
     """Extract PowerShell command - captures full paths and complex commands"""
-    # Busca [PS: ... ] y captura todo lo que esté dentro
-    pattern = r'\[PS:\s*(.+?)\]'
-    match = re.search(pattern, ai_response, re.DOTALL)
+    import re
     
-    if match:
-        return match.group(1).strip()
+    # Busca [PS: ... ] en cualquier formato
+    patterns = [
+        r'\[PS:\s*([^\]]+)\]',           # [PS: comando]
+        r'\[ps:\s*([^\]]+)\]',           # [ps: comando]
+        r'```powershell\s*(.+?)\s*```',  # Bloques de código
+        r'Run:\s*([^\n]+)',              # Run: comando
+    ]
     
-    # Fallback: captura hasta el final de la línea
-    pattern_fallback = r'\[PS:\s*(.+?)(?:\n|$)'
-    match = re.search(pattern_fallback, ai_response)
-    
-    if match:
-        return match.group(1).strip()
+    for pattern in patterns:
+        match = re.search(pattern, ai_response, re.IGNORECASE | re.DOTALL)
+        if match:
+            cmd = match.group(1).strip()
+            # Limpiar comandos que tengan saltos
+            cmd = cmd.split('\n')[0]
+            return cmd
     
     return None
