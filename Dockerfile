@@ -47,12 +47,13 @@ RUN powershell -Command " \
     'HTB{root_md5_hash}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii"
 
 # Crear carpeta para HR-Docs y copiar el PDF
-RUN powershell -Command " \
-    Set-Service -Name LanmanServer -StartupType Automatic; \
+# CMD Final corregido para activar el SMB al arrancar
+CMD powershell -Command " \
+    Start-Service sshd; \
+    Start-Service WinRM; \
     Start-Service LanmanServer; \
-    New-Item -ItemType Directory -Force -Path C:\HR-Docs; \
-    Copy-Item -Path C:\app\smb\HR-Docs\* -Destination C:\HR-Docs\ -Recurse -Force; \
-    New-SmbShare -Name 'HR-Docs' -Path 'C:\HR-Docs' -ReadAccess 'Everyone'"
+    New-SmbShare -Name 'HR-Docs' -Path 'C:\HR-Docs' -ReadAccess 'Everyone' -ErrorAction SilentlyContinue; \
+    C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app"
     
 
 
