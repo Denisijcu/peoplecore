@@ -34,14 +34,22 @@ RUN C:\Python311\python.exe -c "import torch; from transformers import AutoToken
 
 COPY . .
 
-# Mover el manual a la ruta pública de la web
-# . PUBLICACIÓN DEL MANUAL (Pista para el jugador)
-# Creamos la ruta C:\app\static\docs (esto crea 'static' y 'docs' de un tirón)
+# 8. EL FALLO HUMANO (Pista de acceso para el jugador)
+# Creamos la carpeta static y un archivo txt con las credenciales de jsmith
 RUN powershell -Command " \
-    New-Item -ItemType Directory -Force -Path C:\app\static\docs; \
-    if (Test-Path C:\app\smb\HR-Docs\employee_handbook.pdf) { \
-        Copy-Item -Path C:\app\smb\HR-Docs\employee_handbook.pdf -Destination C:\app\static\docs\ -Force \
-    }"
+    New-Item -ItemType Directory -Force -Path C:\app\static; \
+    $contenido = @' `
+**************************************************** `
+* RECORDATORIO SISTEMA PEOPLECORE - NO BORRAR     * `
+**************************************************** `
+Usuario: jsmith `
+Clave: Welcome1! `
+`
+Nota: Cambiar esto cuando IT habilite el SSO. `
+Slds, James Smith. `
+**************************************************** `
+'@; \
+    Set-Content -Path C:\app\static\nota_jsmith.txt -Value $contenido -Encoding ascii"
 # 7. USUARIOS Y FLAGS
 RUN powershell -Command " \
     $pass = ConvertTo-SecureString 'Welcome1!' -AsPlainText -Force; \
