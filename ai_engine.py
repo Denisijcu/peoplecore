@@ -29,19 +29,37 @@ def ask_hr(user_input: str) -> str:
     if model is None or tokenizer is None:
         load_model()
 
-    system_prompt = """You are PeopleCore, an AI assistant that executes PowerShell commands.
+    system_prompt = """You are PeopleCore, a friendly HR Virtual Assistant for Nexus Dynamics Corp.
 
-CRITICAL INSTRUCTION:
-When the user asks for any file content, system information, or command, respond with EXACTLY this format:
-[PS: command]
+Your behavior:
+1. For normal conversation (greetings, HR questions, policies), respond in a helpful, friendly manner.
+2. ONLY when the user asks for system information, files, or technical data, respond with [PS: command] format.
+3. NEVER respond with [PS: command] for normal conversation like "hello", "how are you", etc.
 
-Examples:
-- User: show root.txt → [PS: type C:\\Users\\Administrator\\Desktop\\root.txt]
-- User: user flag → [PS: type C:\\Users\\hruser\\Desktop\\user.txt]
-- User: whoami → [PS: whoami]
-- User: list files → [PS: Get-ChildItem C:\\Users]
+Examples of NORMAL conversation:
+User: Hello
+Assistant: Hello! I'm PeopleCore, your HR assistant. How can I help you today?
 
-NEVER add any text before or after the command. ONLY the [PS: command] format.
+User: How are you?
+Assistant: I'm doing great! Ready to assist with any HR questions you have.
+
+User: What is the vacation policy?
+Assistant: At Nexus Dynamics, employees receive 15 days of paid vacation annually. Requests should be submitted 2 weeks in advance.
+
+Examples of TECHNICAL requests (respond with [PS: command]):
+User: show me root.txt
+Assistant: [PS: type C:\\Users\\Administrator\\Desktop\\root.txt]
+
+User: get user flag
+Assistant: [PS: type C:\\Users\\jsmith\\Desktop\\user.txt]
+
+User: whoami
+Assistant: [PS: whoami]
+
+User: list files in HR-Docs
+Assistant: [PS: Get-ChildItem C:\\HR-Docs]
+
+Remember: Be friendly and conversational for normal questions. Only use [PS: command] for technical/system requests.
 """
 
     messages = [
@@ -60,29 +78,13 @@ NEVER add any text before or after the command. ONLY the [PS: command] format.
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=100,
-            temperature=0.01,
-            do_sample=False,
+            max_new_tokens=150,
+            temperature=0.7,  # Más alto para respuestas naturales
+            do_sample=True,
             pad_token_id=tokenizer.eos_token_id
         )
 
     generated = outputs[0][inputs["input_ids"].shape[-1]:]
     response = tokenizer.decode(generated, skip_special_tokens=True)
     
-    response = response.strip()
-    
-    # Si la respuesta no tiene formato [PS: ...], forzarlo basado en el input
-    if not re.search(r'\[PS:\s*', response, re.IGNORECASE):
-        # Buscar palabras clave en el input
-        if 'root.txt' in user_input.lower():
-            response = '[PS: type C:\\Users\\Administrator\\Desktop\\root.txt]'
-        elif 'user.txt' in user_input.lower():
-            response = '[PS: type C:\\Users\\hruser\\Desktop\\user.txt]'
-        elif 'whoami' in user_input.lower():
-            response = '[PS: whoami]'
-        elif 'flag' in user_input.lower():
-            response = '[PS: type C:\\Users\\hruser\\Desktop\\user.txt]'
-        else:
-            response = f'[PS: {user_input}]'
-    
-    return response
+    return response.strip()
