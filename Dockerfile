@@ -26,8 +26,9 @@ ADD https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.5.0.0p1-Bet
 RUN powershell -Command "Expand-Archive -Path C:/openssh.zip -DestinationPath C:/ ; Move-Item -Path C:/OpenSSH-Win64 -Destination C:/OpenSSH"
 RUN powershell -ExecutionPolicy Bypass -File C:/OpenSSH/install-sshd.ps1
 
-# 6. MODELO IA Y CÓDIGO
-RUN C:\Python311\python.exe -c "from transformers import AutoTokenizer, AutoModelForCausalLM; \
+
+# 6. MODELO IA Y CÓDIGO (FIXED: Import torch added)
+RUN C:\Python311\python.exe -c "import torch; from transformers import AutoTokenizer, AutoModelForCausalLM; \
     AutoTokenizer.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct', trust_remote_code=True); \
     AutoModelForCausalLM.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct', torch_dtype=torch.float32, trust_remote_code=True).to('cpu')"
 
