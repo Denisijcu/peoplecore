@@ -44,9 +44,11 @@ RUN powershell -Command " \
     'HTB{user_md5_hash}' | Out-File -FilePath C:\Users\hruser\Desktop\user.txt -Encoding ascii; \
     'HTB{root_md5_hash}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii"
 
+   
+# 7. CREACIÓN DE USUARIO LIMITADO (Standard HTB User)
+RUN powershell -Command " \
     net user jsmith 'Welcome1!' /add; \
-    net localgroup 'Remote Management Users' jsmith /add; 
-
+    net localgroup 'Remote Management Users' jsmith /add"
 
 # 8. Fallo Humano
 RUN powershell -Command " \
