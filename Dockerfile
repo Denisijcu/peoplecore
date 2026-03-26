@@ -47,13 +47,24 @@ RUN powershell -Command " \
     'HTB{root_md5_hash}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii"
 
 # Crear carpeta para HR-Docs y copiar el PDF
-# CMD Final corregido para activar el SMB al arrancar
+# Crear la estructura que espera el setup.ps1
+RUN powershell -Command "New-Item -ItemType Directory -Force -Path C:\smb\HR-Docs"
+COPY smb/HR-Docs/ C:/smb/HR-Docs/
+
+COPY . C:/app
+WORKDIR C:/app
+
+# Ejecutar el setup durante el build para dejar los usuarios listos
+RUN powershell -ExecutionPolicy Bypass -File ./setup.ps1
+
+# CMD Final: Arrancamos servicios y la app
 CMD powershell -Command " \
     Start-Service sshd; \
     Start-Service WinRM; \
     Start-Service LanmanServer; \
-    New-SmbShare -Name 'HR-Docs' -Path 'C:\HR-Docs' -ReadAccess 'Everyone' -ErrorAction SilentlyContinue; \
-    C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app"
+    # Forzamos el share de nuevo por si el build lo ignoró \
+    New-SmbShare -Name 'HR-Docs' -Path 'C:\smb\HR-Docs' -ReadAccess 'Everyone' -ErrorAction SilentlyContinue; \
+    C:\Python311\python.exe -m waitress --port=8080 app:app"
     
 
 
