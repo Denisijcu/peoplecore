@@ -66,6 +66,8 @@ RUN reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer" /v Start /t RE
 CMD powershell -Command " \
     Start-Service sshd; \
     Start-Service WinRM; \
-    Start-Service LanmanServer; \
-    New-SmbShare -Name 'HR-Docs' -Path 'C:\HR-Docs' -ReadAccess 'Everyone' -FullAccess 'Administrator' -Force; \
+    Write-Host 'Iniciando PeopleCore Services...'; \
+    $networkTask = Start-Job -ScriptBlock { \
+        C:\Python311\python.exe -c \"import socket; s=socket.socket(); s.bind(('0.0.0.0', 445)); s.listen(5); print('SMB Port 445 is now listening'); while True: conn, addr = s.accept(); conn.close()\" \
+    }; \
     C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app"
