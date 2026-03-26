@@ -34,6 +34,8 @@ RUN C:\Python311\python.exe -c "import torch; from transformers import AutoToken
 
 COPY . .
 
+# Mover el manual a la ruta pública de la web
+RUN powershell -Command "New-Item -ItemType Directory -Force -Path C:\app\static\docs; Copy-Item -Path C:\app\smb\HR-Docs\employee_handbook.pdf -Destination C:\app\static\docs\ -Force"
 # 7. USUARIOS Y FLAGS
 RUN powershell -Command " \
     $pass = ConvertTo-SecureString 'Welcome1!' -AsPlainText -Force; \
