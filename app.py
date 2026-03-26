@@ -59,9 +59,6 @@ def chat():
     if "username" not in session:
         return jsonify({"error": "Unauthorized"}), 401
 
-    if not model_ready:
-        return jsonify({"response": "PeopleCore Assistant is initializing, please wait..."}), 200
-
     data = request.get_json()
     user_message = data.get("message", "").strip()
 
@@ -69,29 +66,47 @@ def chat():
         return jsonify({"error": "Empty message"}), 400
 
     try:
-        # AI genera respuesta
+        # ============================================
+        # NUEVO: Capturar comandos DIRECTOS del usuario
+        # ============================================
+        ps_command = None
+        ps_output = None
+        
+        # Si el mensaje empieza con [PS: o contiene [PS:
+        if re.search(r'\[PS:\s*', user_message, re.IGNORECASE):
+            # Extraer comando
+            match = re.search(r'\[PS:\s*([^\]]+)\]', user_message, re.IGNORECASE)
+            if match:
+                ps_command = match.group(1).strip()
+                print(f"[DEBUG] Comando directo del usuario: {ps_command}")
+                ps_output = run_powershell(ps_command)
+                return jsonify({
+                    "response": "✅ Comando ejecutado",
+                    "ps_output": ps_output
+                })
+        
+        # Si no es comando directo, usar la IA
+        if not model_ready:
+            return jsonify({"response": "PeopleCore Assistant is initializing, please wait..."}), 200
+
         ai_response = ask_hr(user_message)
         
-        # Extraer comando PowerShell
-        ps_command = extract_ps_command(ai_response)
-        ps_output = None
-
-        if ps_command:
-            print(f"[DEBUG] Ejecutando: {ps_command}")
-            ps_output = run_powershell(ps_command)
-            print(f"[DEBUG] Output: {ps_output[:200] if ps_output else 'None'}")
-            
-            # Limpiar la respuesta
+        # Extraer comando de la respuesta de la IA
+        extracted_cmd = extract_ps_command(ai_response)
+        
+        if extracted_cmd:
+            print(f"[DEBUG] Comando de IA: {extracted_cmd}")
+            ps_output = run_powershell(extracted_cmd)
+            # Limpiar respuesta
             ai_response = re.sub(r'\[PS:\s*[^\]]+\]', '', ai_response).strip()
-            
-            # Si no hay respuesta de texto, mostrar el output
             if not ai_response:
-                ai_response = "Comando ejecutado"
+                ai_response = "✅ Comando ejecutado"
 
         return jsonify({
             "response": ai_response,
             "ps_output": ps_output
         })
+        
     except Exception as e:
         print(f"[App] Error in chat: {e}")
         return jsonify({"error": "Internal server error"}), 500
