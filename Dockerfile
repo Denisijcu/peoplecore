@@ -46,15 +46,22 @@ RUN powershell -Command " \
 
 # 8. CREAR SMB SHARE HR-Docs (SOLO AGREGAR ESTO)
 # 8. PREPARAR CARPETA (Sin crear el share aquí porque el servicio está off)
-RUN powershell -Command " \
-    New-Item -ItemType Directory -Force -Path C:\HR-Docs; \
-    if (Test-Path C:\app\smb\HR-Docs) { Copy-Item -Path C:\app\smb\HR-Docs\* -Destination C:\HR-Docs\ -Recurse -Force }"
+#RUN powershell -Command " \
+#    New-Item -ItemType Directory -Force -Path C:\HR-Docs; \
+ #   if (Test-Path C:\app\smb\HR-Docs) { Copy-Item -Path C:\app\smb\HR-Docs\* -Destination C:\HR-Docs\ -Recurse -Force }"
 
 EXPOSE 8080 22 445 5985
 
 # FIX SMB: Forzar arranque del servicio Server en el registro
 RUN reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer" /v Start /t REG_DWORD /d 2 /f
 RUN reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer" /v Type /t REG_DWORD /d 32 /f
+# 8. FIX SMB AGRESIVO (Borrar dependencias y forzar inicio)
+RUN reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer" /v Start /t REG_DWORD /d 2 /f && \
+    reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer" /v DependOnService /t REG_MULTI_SZ /d "" /f && \
+    powershell -Command "New-Item -ItemType Directory -Force -Path C:\HR-Docs"
+
+
+
 # 9. ARRANQUE (Activamos el servicio y el share al encender)
 CMD powershell -Command " \
     Start-Service sshd; \
