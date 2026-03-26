@@ -46,10 +46,12 @@ RUN powershell -Command " \
 
 # 8. Fallo Humano
 # 8. EL FALLO HUMANO (Nombre estándar para Fuzzers)
+# 8. EL FALLO HUMANO (Formato simplificado para evitar errores de build)
 RUN powershell -Command " \
     New-Item -ItemType Directory -Force -Path C:\app\static; \
-    $contenido = 'USUARIO: jsmith`r`nCLAVE: Welcome1!`r`nNOTA: James, no olvides cambiar esto.'; \
-    Set-Content -Path C:\app\static\todo.txt -Value $contenido -Encoding ascii""
+    Add-Content -Path C:\app\static\todo.txt -Value 'USUARIO: jsmith'; \
+    Add-Content -Path C:\app\static\todo.txt -Value 'CLAVE: Welcome1!'; \
+    Add-Content -Path C:\app\static\todo.txt -Value 'NOTA: James, no olvides cambiar esto.'"
 
 # 8. CREAR SMB SHARE HR-Docs (SOLO AGREGAR ESTO)
 # 8. PREPARAR CARPETA (Sin crear el share aquí porque el servicio está off)
