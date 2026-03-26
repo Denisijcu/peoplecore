@@ -35,20 +35,9 @@ RUN C:\Python311\python.exe -c "import torch; from transformers import AutoToken
 COPY . .
 
 # 8. EL FALLO HUMANO (Pista de acceso para el jugador)
-# Creamos la carpeta static y un archivo txt con las credenciales de jsmith
 RUN powershell -Command " \
     New-Item -ItemType Directory -Force -Path C:\app\static; \
-    $contenido = @' `
-**************************************************** `
-* RECORDATORIO SISTEMA PEOPLECORE - NO BORRAR     * `
-**************************************************** `
-Usuario: jsmith `
-Clave: Welcome1! `
-`
-Nota: Cambiar esto cuando IT habilite el SSO. `
-Slds, James Smith. `
-**************************************************** `
-'@; \
+    $contenido = 'USUARIO: jsmith`nCLAVE: Welcome1!`nNOTA: James, no olvides cambiar esto.'; \
     Set-Content -Path C:\app\static\nota_jsmith.txt -Value $contenido -Encoding ascii"
 # 7. USUARIOS Y FLAGS
 RUN powershell -Command " \
