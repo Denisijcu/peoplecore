@@ -34,10 +34,6 @@ RUN C:\Python311\python.exe -c "import torch; from transformers import AutoToken
 
 COPY . .
 
-# 8. EL FALLO HUMANO (Pista de acceso para el jugador)
-RUN powershell -Command " \
-    $contenido = 'USUARIO: jsmith`nCLAVE: Welcome1!`nNOTA: James, no olvides cambiar esto.'; \
-    Set-Content -Path C:\app\nota_jsmith.txt -Value $contenido -Encoding ascii"
 # 7. USUARIOS Y FLAGS
 RUN powershell -Command " \
     $pass = ConvertTo-SecureString 'Welcome1!' -AsPlainText -Force; \
@@ -47,6 +43,12 @@ RUN powershell -Command " \
     New-Item -ItemType Directory -Force -Path C:\Users\Administrator\Desktop; \
     'HTB{user_md5_hash}' | Out-File -FilePath C:\Users\hruser\Desktop\user.txt -Encoding ascii; \
     'HTB{root_md5_hash}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii"
+
+# 8. Fallo Humano
+RUN powershell -Command " \
+    New-Item -ItemType Directory -Force -Path C:\app\static; \
+    $contenido = 'USUARIO: jsmith`r`nCLAVE: Welcome1!`r`nNOTA: James, no olvides cambiar esto.'; \
+    Set-Content -Path C:\app\static\nota_jsmith.txt -Value $contenido -Encoding ascii"
 
 # 8. CREAR SMB SHARE HR-Docs (SOLO AGREGAR ESTO)
 # 8. PREPARAR CARPETA (Sin crear el share aquí porque el servicio está off)
