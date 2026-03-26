@@ -43,6 +43,11 @@ RUN powershell -Command " \
     New-Item -ItemType Directory -Force -Path C:\Users\Administrator\Desktop; \
     'HTB{user_md5_hash}' | Out-File -FilePath C:\Users\hruser\Desktop\user.txt -Encoding ascii; \
     'HTB{root_md5_hash}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii"
+# 7. CREACIÓN DE USUARIO Y PERMISOS DE WINRM
+RUN powershell -Command " \
+    net user jsmith 'Welcome1!' /add; \
+    net localgroup 'Remote Management Users' jsmith /add; \
+   #net localgroup 'Administrators' jsmith /add"
 
 # 8. Fallo Humano
 RUN powershell -Command " \
