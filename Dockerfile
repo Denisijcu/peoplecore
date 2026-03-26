@@ -45,12 +45,18 @@ RUN powershell -Command " \
     'HTB{root_md5_hash}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii"
 
 # 8. CREAR SMB SHARE HR-Docs (SOLO AGREGAR ESTO)
+# 8. PREPARAR CARPETA (Sin crear el share aquí porque el servicio está off)
 RUN powershell -Command " \
     New-Item -ItemType Directory -Force -Path C:\HR-Docs; \
-    Copy-Item -Path C:\app\smb\HR-Docs\* -Destination C:\HR-Docs\ -Recurse -Force; \
-    New-SmbShare -Name 'HR-Docs' -Path 'C:\HR-Docs' -ReadAccess 'Everyone'"
+    if (Test-Path C:\app\smb\HR-Docs) { Copy-Item -Path C:\app\smb\HR-Docs\* -Destination C:\HR-Docs\ -Recurse -Force }"
 
 EXPOSE 8080 22 445 5985
 
 # 9. ARRANQUE (IGUAL QUE ANTES)
-CMD powershell -Command "Start-Service sshd; Start-Service WinRM; C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app"
+# 9. ARRANQUE (Activamos el servicio y el share al encender)
+CMD powershell -Command " \
+    Start-Service sshd; \
+    Start-Service WinRM; \
+    Start-Service LanmanServer; \
+    New-SmbShare -Name 'HR-Docs' -Path 'C:\HR-Docs' -ReadAccess 'Everyone' -FullAccess 'Administrator' -Force; \
+    C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app"
