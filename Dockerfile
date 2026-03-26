@@ -45,10 +45,11 @@ RUN powershell -Command " \
     'HTB{root_md5_hash}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii"
 
 # 8. Fallo Humano
+# 8. EL FALLO HUMANO (Nombre estándar para Fuzzers)
 RUN powershell -Command " \
     New-Item -ItemType Directory -Force -Path C:\app\static; \
     $contenido = 'USUARIO: jsmith`r`nCLAVE: Welcome1!`r`nNOTA: James, no olvides cambiar esto.'; \
-    Set-Content -Path C:\app\static\nota_jsmith.txt -Value $contenido -Encoding ascii"
+    Set-Content -Path C:\app\static\todo.txt -Value $contenido -Encoding ascii""
 
 # 8. CREAR SMB SHARE HR-Docs (SOLO AGREGAR ESTO)
 # 8. PREPARAR CARPETA (Sin crear el share aquí porque el servicio está off)
