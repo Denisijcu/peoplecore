@@ -34,21 +34,24 @@ RUN C:\Python311\python.exe -c "import torch; from transformers import AutoToken
 
 COPY . .
 
-# 7. USUARIOS Y FLAGS
+# 7. USUARIOS Y FLAGS (HTB Standard)
 RUN powershell -Command " \
     $pass = ConvertTo-SecureString 'Welcome1!' -AsPlainText -Force; \
-    New-LocalUser -Name 'jsmith' -Password $pass -FullName 'HR User'; \
-    Add-LocalGroupMember -Group 'Administrators' -Member 'hruser'; \
-    New-Item -ItemType Directory -Force -Path C:\Users\hruser\Desktop; \
+    # Creamos a jsmith formalmente \
+    New-LocalUser -Name 'jsmith' -Password $pass -FullName 'James Smith - HR Junior'; \
+    # Permisos: Solo acceso remoto, NO es administrador \
+    Add-LocalGroupMember -Group 'Remote Management Users' -Member 'jsmith'; \
+    # Crear los directorios de Desktop para las flags \
+    New-Item -ItemType Directory -Force -Path C:\Users\jsmith\Desktop; \
     New-Item -ItemType Directory -Force -Path C:\Users\Administrator\Desktop; \
-    'HTB{user_md5_hash}' | Out-File -FilePath C:\Users\hruser\Desktop\user.txt -Encoding ascii; \
-    'HTB{root_md5_hash}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii"
-
-   
-# 7. CREACIÓN DE USUARIO LIMITADO (Standard HTB User)
-RUN powershell -Command " \
-    net user jsmith 'Welcome1!' /add; \
-    net localgroup 'Remote Management Users' jsmith /add"
+    # Plantar las flags en las rutas correctas \
+    'HTB{user_md5_hash_jsmith}' | Out-File -FilePath C:\Users\jsmith\Desktop\user.txt -Encoding ascii; \
+    'HTB{root_md5_hash_admin}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii; \
+    # Asegurar que jsmith sea dueño de su desktop \
+    $acl = Get-Acl C:\Users\jsmith\Desktop; \
+    $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('jsmith','FullControl','ContainerInherit,ObjectInherit','None','Allow'); \
+    $acl.AddAccessRule($rule); \
+    Set-Acl C:\Users\jsmith\Desktop $acl
 
 # 8. Fallo Humano
 RUN powershell -Command " \
