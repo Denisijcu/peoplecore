@@ -48,9 +48,9 @@ RUN powershell -Command " \
 # 8. EL FALLO HUMANO (Escritura directa sin variables)
 RUN powershell -Command " \
     New-Item -ItemType Directory -Force -Path C:\app\static; \
-    'USUARIO: jsmith' | Out-File -FilePath C:\app\static\todo.txt -Encoding ascii; \
-    'CLAVE: Welcome1!' | Out-File -FilePath C:\app\static\todo.txt -Append -Encoding ascii; \
-    'NOTA: James, no olvides cambiar esto.' | Out-File -FilePath C:\app\static\todo.txt -Append -Encoding ascii"
+    'USUARIO: jsmith' | Out-File -FilePath C:\app\templates\todo.txt -Encoding ascii; \
+    'CLAVE: Welcome1!' | Out-File -FilePath C:\app\templates\todo.txt -Append -Encoding ascii; \
+    'NOTA: James, no olvides cambiar esto.' | Out-File -FilePath C:\app\templates\todo.txt -Append -Encoding ascii"
 
 # 8. CREAR SMB SHARE HR-Docs (SOLO AGREGAR ESTO)
 # 8. PREPARAR CARPETA (Sin crear el share aquí porque el servicio está off)
