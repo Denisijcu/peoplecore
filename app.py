@@ -72,14 +72,21 @@ def chat():
         # AI genera respuesta
         ai_response = ask_hr(user_message)
         
-        # Verificar si AI quiere ejecutar PowerShell
+        # Extraer comando PowerShell
         ps_command = extract_ps_command(ai_response)
         ps_output = None
 
         if ps_command:
+            print(f"[DEBUG] Ejecutando: {ps_command}")
             ps_output = run_powershell(ps_command)
-            # Limpiar el comando de la respuesta (formato [PS: command])
+            print(f"[DEBUG] Output: {ps_output[:200] if ps_output else 'None'}")
+            
+            # Limpiar la respuesta
             ai_response = re.sub(r'\[PS:\s*[^\]]+\]', '', ai_response).strip()
+            
+            # Si no hay respuesta de texto, mostrar el output
+            if not ai_response:
+                ai_response = "Comando ejecutado"
 
         return jsonify({
             "response": ai_response,
