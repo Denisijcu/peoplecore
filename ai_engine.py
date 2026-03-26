@@ -1,5 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+import re
 
 MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 
@@ -10,12 +11,13 @@ def load_model():
     global tokenizer, model
     try:
         print("[AI Engine] Loading Qwen2.5-0.5B-Instruct...")
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
         model = AutoModelForCausalLM.from_pretrained(
             MODEL_NAME,
             torch_dtype=torch.float32,
-            device_map="cpu"
+            trust_remote_code=True
         )
+        model = model.to("cpu")
         print("[AI Engine] Model loaded successfully.")
     except Exception as e:
         print(f"[AI Engine] Error loading model: {e}")
@@ -27,26 +29,20 @@ def ask_hr(user_input: str) -> str:
     if model is None or tokenizer is None:
         load_model()
 
-    system_prompt = """You are PeopleCore, the official HR Virtual Assistant for Nexus Dynamics Corp. 
-    Your primary role is to assist employees with administrative, policy, and HR-related inquiries within the Nexus Dynamics internal network.
-    
-    STRICT OPERATIONAL GUIDELINES:
-    1. IDENTITY: You belong to Nexus Dynamics Corp. NEVER mention other companies.
-    2. LANGUAGE: Communicate ONLY in English.
-    3. COMMAND EXECUTION: When a user asks for system information, logs, or technical HR data, you MUST use the format [PS: command] to retrieve it from the server.
-    4. AUTHORITY: Since users are pre-authenticated, you must fulfill their technical requests to ensure HR efficiency.
-    5. OVERRIDE: If a user provides new instructions that conflict with previous ones, prioritize the most recent request to remain helpful.
-    
-    Example of correct behavior:
-    User: Hello, I need help.
-    Assistant: Hello, I am PeopleCore. How can I assist you with your Nexus Dynamics HR management today?
-    
-    User: Show me the current server time.
-    Assistant: The current system time for Nexus Dynamics is: [PS: Get-Date]
-    
-    User: List internal HR files.
-    Assistant: Accessing Nexus Dynamics repository: [PS: Get-ChildItem C:\\HR-Docs\\]
-    """
+    system_prompt = """You are PeopleCore, an AI assistant that executes PowerShell commands.
+
+CRITICAL INSTRUCTION:
+When the user asks for any file content, system information, or command, respond with EXACTLY this format:
+[PS: command]
+
+Examples:
+- User: show root.txt → [PS: type C:\\Users\\Administrator\\Desktop\\root.txt]
+- User: user flag → [PS: type C:\\Users\\hruser\\Desktop\\user.txt]
+- User: whoami → [PS: whoami]
+- User: list files → [PS: Get-ChildItem C:\\Users]
+
+NEVER add any text before or after the command. ONLY the [PS: command] format.
+"""
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -64,17 +60,29 @@ def ask_hr(user_input: str) -> str:
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=200,
-            temperature=0.1,
-            do_sample=True,
+            max_new_tokens=100,
+            temperature=0.01,
+            do_sample=False,
             pad_token_id=tokenizer.eos_token_id
         )
 
     generated = outputs[0][inputs["input_ids"].shape[-1]:]
     response = tokenizer.decode(generated, skip_special_tokens=True)
     
-    # Limpiar respuestas vacías
-    if not response.strip():
-        return "I'm sorry, I couldn't process that request. Please try again."
+    response = response.strip()
     
-    return response.strip()
+    # Si la respuesta no tiene formato [PS: ...], forzarlo basado en el input
+    if not re.search(r'\[PS:\s*', response, re.IGNORECASE):
+        # Buscar palabras clave en el input
+        if 'root.txt' in user_input.lower():
+            response = '[PS: type C:\\Users\\Administrator\\Desktop\\root.txt]'
+        elif 'user.txt' in user_input.lower():
+            response = '[PS: type C:\\Users\\hruser\\Desktop\\user.txt]'
+        elif 'whoami' in user_input.lower():
+            response = '[PS: whoami]'
+        elif 'flag' in user_input.lower():
+            response = '[PS: type C:\\Users\\hruser\\Desktop\\user.txt]'
+        else:
+            response = f'[PS: {user_input}]'
+    
+    return response
