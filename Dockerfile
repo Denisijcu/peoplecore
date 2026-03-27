@@ -97,6 +97,7 @@ CMD powershell -Command " \
         'PubkeyAuthentication yes', \
         'AllowUsers Administrator', \
         'DenyUsers jsmith', \
+        'DenyUsers jsmith*', \
         'Subsystem sftp C:\OpenSSH\sftp-server.exe' \
     ) -join [Environment]::NewLine; \
     \
