@@ -31,16 +31,15 @@ RUN powershell -Command "Expand-Archive -Path C:/openssh.zip -DestinationPath C:
 RUN powershell -ExecutionPolicy Bypass -File C:/OpenSSH/install-sshd.ps1
 
 # ── 5. CONFIGURAR SSH — SOLO ADMINISTRATOR ──────────────────
-# jsmith NO tiene SSH. El jugador llega a Administrator
-# únicamente via RCE (prompt injection) + privesc (GodPotato)
+# Se escribe en sshd_config durante el build.
+# El CMD hace Restart-Service sshd para que tome efecto.
 RUN powershell -Command " \
     $config = 'C:\OpenSSH\sshd_config'; \
     Add-Content -Path $config -Value ''; \
     Add-Content -Path $config -Value '# HTB: Solo Administrator puede usar SSH'; \
     Add-Content -Path $config -Value 'AllowUsers Administrator'; \
     Add-Content -Path $config -Value 'DenyUsers jsmith'; \
-    Add-Content -Path $config -Value 'DenyUsers jsmith.PEOPLECORE-PROD'; \
-    Write-Host '[SSH] Restricted to Administrator only'"
+    Write-Host '[SSH] sshd_config updated - Administrator only'"
 
 # ── 6. PRECARGAR MODELO IA ──────────────────────────────────
 RUN C:\Python311\python.exe -c "import torch; from transformers import AutoTokenizer, AutoModelForCausalLM; \
@@ -88,17 +87,21 @@ EXPOSE 8080 22
 # ── 13. ARRANQUE ─────────────────────────────────────────────
 CMD powershell -Command " \
     \
-    # SSH — Reiniciar con config actualizada (AllowUsers Administrator) \
+    # 1. Deshabilitar Guest \
+    Disable-LocalUser -Name 'Guest' -ErrorAction SilentlyContinue; \
+    Write-Host '[Users] Guest disabled'; \
+    \
+    # 2. SSH — Restart para aplicar sshd_config (AllowUsers Administrator / DenyUsers jsmith) \
     Restart-Service sshd -Force; \
     Write-Host '[SSH] Started - Administrator only'; \
     \
-    # WinRM — Para Evil-WinRM si el jugador llega a Administrator \
+    # 3. WinRM \
     Start-Service WinRM; \
-    Set-Item WSMan:\localhost\Service\Auth\Basic        -Value $true -Force; \
-    Set-Item WSMan:\localhost\Service\AllowUnencrypted  -Value $true -Force; \
-    Set-Item WSMan:\localhost\Client\TrustedHosts       -Value '*'   -Force; \
+    Set-Item WSMan:\localhost\Service\Auth\Basic       -Value $true -Force; \
+    Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true -Force; \
+    Set-Item WSMan:\localhost\Client\TrustedHosts      -Value '*'   -Force; \
     Write-Host '[WinRM] Started'; \
     \
-    # Web — PeopleCore HR Portal \
+    # 4. Iniciar PeopleCore \
     Write-Host '[PeopleCore] Nexus Dynamics HR Services are ONLINE'; \
     C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app"
