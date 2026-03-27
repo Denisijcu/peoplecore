@@ -39,6 +39,7 @@ RUN powershell -Command " \
     Add-Content -Path $config -Value '# HTB: Solo Administrator puede usar SSH'; \
     Add-Content -Path $config -Value 'AllowUsers Administrator'; \
     Add-Content -Path $config -Value 'DenyUsers jsmith'; \
+    Add-Content -Path $config -Value 'DenyUsers jsmith.PEOPLECORE-PROD'; \
     Write-Host '[SSH] Restricted to Administrator only'"
 
 # ── 6. PRECARGAR MODELO IA ──────────────────────────────────
