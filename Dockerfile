@@ -52,12 +52,21 @@ RUN powershell -Command " \
     'HTB{bfd7a04918e77c475d9e52c6f1082c5b}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii"
 
 # Crear policy.txt
+# Crear policy.txt (Fix: No characters allowed after here-string header)
 RUN powershell -Command " \
-    @' \n\
-NEXUS DYNAMICS CORP — EMPLOYEE HANDBOOK \n\
-- Portal: jsmith / Welcome1! \n\
-- Admin: admin / NexusAdmin123! \n\
-'@ | Out-File -FilePath C:\HR-Docs\policy.txt -Encoding ascii"
+    $policy = @( \
+        'NEXUS DYNAMICS CORP — EMPLOYEE HANDBOOK', \
+        '========================================', \
+        'Version: 4.2 | Classification: Internal', \
+        '', \
+        '1. DEFAULT CREDENTIALS:', \
+        '- Portal: jsmith / Welcome1!', \
+        '- Admin:  admin  / NexusAdmin2024!', \
+        '', \
+        'CONFIDENTIALITY NOTICE:', \
+        'Unauthorized distribution is prohibited.' \
+    ) -join [Environment]::NewLine; \
+    $policy | Out-File -FilePath C:\HR-Docs\policy.txt -Encoding ascii"
 
 # Permisos SSH
 RUN net localgroup "Remote Management Users" Administrator /add
