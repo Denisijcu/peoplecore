@@ -61,7 +61,7 @@ RUN powershell -Command " \
         '', \
         '1. DEFAULT CREDENTIALS:', \
         '- Portal: jsmith / Welcome1!', \
-        '- Admin:  admin  / NexusAdmin2024!', \
+        '- Admin:  administrator  / NexusAdmin2024!', \
         '', \
         'CONFIDENTIALITY NOTICE:', \
         'Unauthorized distribution is prohibited.' \
