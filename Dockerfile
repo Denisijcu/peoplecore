@@ -50,69 +50,6 @@ RUN net user Administrator NexusAdmin2024! /active:yes; \
     New-Item -ItemType Directory -Force -Path C:\HR-Docs; \
     'HTB{6e8979e2c40c117d84878a8790325f6e}' | Out-File -FilePath C:\Users\jsmith\Desktop\user.txt -Encoding ascii; \
     'HTB{bfd7a04918e77c475d9e52c6f1082c5b}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii
-    
-
-# Crear policy.txt
-RUN powershell -Command " \
-    @' \n\
-NEXUS DYNAMICS CORP — EMPLOYEE HANDBOOK & HR POLICIES \n\
-====================================================== \n\
-\n\
-Version: 4.2 | Effective: January 2026 | Classification: Internal Use Only \n\
-\n\
-1. VACATION POLICY \n\
----------------------------------------- \n\
-Full-time employees receive 15 days of paid vacation annually. \n\
-Part-time employees receive 7 days of paid vacation annually. \n\
-Vacation requests must be submitted at least 14 calendar days in advance. \n\
-Unused vacation days may be carried over up to a maximum of 5 days per calendar year. \n\
-\n\
-2. SICK LEAVE \n\
----------------------------------------- \n\
-Employees accrue 1 day of paid sick leave per month worked. \n\
-Sick leave may be used for personal illness, medical appointments, or family care. \n\
-Notification to your supervisor is required before 9:00 AM on the day of absence. \n\
-Documentation may be required for absences exceeding 3 consecutive days. \n\
-\n\
-3. WORK SCHEDULE \n\
----------------------------------------- \n\
-Standard work hours: 9:00 AM — 5:00 PM, Monday through Friday. \n\
-Remote work is permitted with supervisor approval. \n\
-Employees must log all hours worked in the internal HR portal. \n\
-\n\
-4. IT SYSTEMS ACCESS \n\
----------------------------------------- \n\
-Employees receive default credentials during onboarding: \n\
-- PeopleCore Portal: jsmith / Welcome1! \n\
-- IT Helpdesk: mrodriguez / HR2024! \n\
-- Admin Panel: admin / NexusAdmin123! \n\
-\n\
-Credentials must be changed within 48 hours of first login. \n\
-All system access is logged and monitored for security compliance. \n\
-\n\
-5. CODE OF CONDUCT \n\
----------------------------------------- \n\
-All employees are expected to: \n\
-- Maintain confidentiality of company data \n\
-- Report security incidents immediately to IT Security \n\
-- Use company resources only for business purposes \n\
-- Follow the Acceptable Use Policy (AUP) available on the intranet \n\
-\n\
-6. REPORTING ISSUES \n\
----------------------------------------- \n\
-For HR inquiries: hr@nexusdyn.internal \n\
-For IT support: helpdesk@nexusdyn.internal \n\
-For security concerns: security@nexusdyn.internal \n\
-\n\
-7. CONFIDENTIALITY NOTICE \n\
----------------------------------------- \n\
-This document contains proprietary information of Nexus Dynamics Corp. \n\
-Unauthorized distribution, reproduction, or disclosure is prohibited. \n\
-\n\
-© 2026 Nexus Dynamics Corp. All rights reserved. \n\
-'@ | Out-File -FilePath C:\HR-Docs\policy.txt -Encoding ascii"
-
-
 
 RUN net localgroup "Remote Management Users" Administrator /add
 
