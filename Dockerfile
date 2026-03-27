@@ -85,15 +85,38 @@ RUN powershell -Command "New-Item -ItemType Directory -Force -Path C:\Tools"
 EXPOSE 8080 22
 
 # ── 11. ARRANQUE (Blindado) ──────────────────────────────────
+# ── 11. ARRANQUE (Vertex Coders Security Hardening) ──────────
 CMD powershell -Command " \
-    # Configurar SSH — Forzar clave y puerto \
+    # 1. Configurar SSH - Hardening total \
+    $sshdConfig = 'C:\OpenSSH\sshd_config'; \
+    $configContent = @( \
+        'Port 22', \
+        'ListenAddress 0.0.0.0', \
+        'Protocol 2', \
+        'PasswordAuthentication yes', \
+        'PubkeyAuthentication yes', \
+        'AllowUsers Administrator', \
+        'DenyUsers jsmith', \
+        'Subsystem sftp C:\OpenSSH\sftp-server.exe' \
+    ) -join [Environment]::NewLine; \
+    \
+    Set-Content -Path $sshdConfig -Value $configContent -Force; \
+    \
+    # 2. Asegurar permisos de los archivos de SSH \
     Start-Service sshd; \
     \
-    # Configurar WinRM \
+    # 3. Quitar a jsmith de cualquier grupo de acceso remoto (Doble check) \
+    Remove-LocalGroupMember -Group 'Remote Management Users' -Member 'jsmith' -ErrorAction SilentlyContinue; \
+    Remove-LocalGroupMember -Group 'Remote Desktop Users' -Member 'jsmith' -ErrorAction SilentlyContinue; \
+    \
+    # 4. WinRM para Admin solamente \
     Start-Service WinRM; \
     Set-Item WSMan:\localhost\Service\Auth\Basic -Value $true -Force; \
     Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true -Force; \
-    Set-Item WSMan:\localhost\Client\TrustedHosts -Value '*' -Force; \
     \
+    Write-Host '[SECURITY] jsmith SSH/WinRM access: DENIED' -ForegroundColor Red; \
+    Write-Host '[SECURITY] Administrator SSH access: ENABLED' -ForegroundColor Green; \
+    \
+    # 5. Lanzar PeopleCore Web \
     Write-Host '[PeopleCore] Nexus Dynamics HR Services are ONLINE' -ForegroundColor Cyan; \
     C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app"
