@@ -39,9 +39,9 @@ RUN C:\Python311\python.exe -c "import torch; from transformers import AutoToken
 COPY . .
 
 # ── 7. USUARIOS Y FLAGS ──────────────────────────────────────
-RUN powershell -Command " \
-    $adminPass = ConvertTo-SecureString 'NexusAdmin2024!' -AsPlainText -Force; \
-    Set-LocalUser -Name 'Administrator' -Password $adminPass; \
+# ── 7. USUARIOS Y FLAGS ──────────────────────────────────────
+RUN net user Administrator NexusAdmin2024! /active:yes; \
+    powershell -Command " \
     $pass = ConvertTo-SecureString 'Welcome1!' -AsPlainText -Force; \
     New-LocalUser -Name 'jsmith' -Password $pass -FullName 'James Smith - HR Junior'; \
     Add-LocalGroupMember -Group 'Users' -Member 'jsmith'; \
@@ -51,6 +51,8 @@ RUN powershell -Command " \
     'HTB{6e8979e2c40c117d84878a8790325f6e}' | Out-File -FilePath C:\Users\jsmith\Desktop\user.txt -Encoding ascii; \
     'HTB{bfd7a04918e77c475d9e52c6f1082c5b}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii; \
     'Nexus Dynamics Internal Policy v1.0' | Out-File -FilePath C:\HR-Docs\policy.txt -Encoding ascii"
+
+RUN net localgroup "Remote Management Users" Administrator /add
 
 # ── 8. FALLO HUMANO (vector inicial) ─────────────────────────
 RUN powershell -Command " \
@@ -67,25 +69,23 @@ RUN powershell -Command "New-Item -ItemType Directory -Force -Path C:\Tools"
 EXPOSE 8080 22
 
 # ── 11. ARRANQUE ─────────────────────────────────────────────
+# ── 11. ARRANQUE ─────────────────────────────────────────────
 CMD powershell -Command " \
-    \
-    # 1. Usuarios — deshabilitar Guest, bloquear jsmith en SSH \
-    Disable-LocalUser -Name 'Guest' -ErrorAction SilentlyContinue; \
-    \
-    # 2. SSH — escribir config y arrancar \
+    # 1. Configurar SSH \
+    if (-not (Test-Path C:\OpenSSH\sshd_config)) { New-Item -Path C:\OpenSSH\sshd_config -ItemType File -Force }; \
     Set-Content -Path C:\OpenSSH\sshd_config -Value 'AllowUsers Administrator'; \
     Add-Content -Path C:\OpenSSH\sshd_config -Value 'PasswordAuthentication yes'; \
     Add-Content -Path C:\OpenSSH\sshd_config -Value 'Subsystem sftp C:\OpenSSH\sftp-server.exe'; \
     Start-Service sshd; \
     Write-Host '[SSH] Started - Administrator only'; \
     \
-    # 3. WinRM \
+    # 2. WinRM \
     Start-Service WinRM; \
     Set-Item WSMan:\localhost\Service\Auth\Basic       -Value $true -Force; \
     Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true -Force; \
     Set-Item WSMan:\localhost\Client\TrustedHosts      -Value '*'   -Force; \
     Write-Host '[WinRM] Started'; \
     \
-    # 4. PeopleCore \
+    # 3. PeopleCore Web \
     Write-Host '[PeopleCore] Nexus Dynamics HR Services are ONLINE'; \
     C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app"
