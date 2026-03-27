@@ -49,7 +49,7 @@ RUN net user Administrator NexusAdmin2024! /active:yes; \
     New-Item -ItemType Directory -Force -Path C:\Users\Administrator\Desktop; \
     New-Item -ItemType Directory -Force -Path C:\HR-Docs; \
     'HTB{6e8979e2c40c117d84878a8790325f6e}' | Out-File -FilePath C:\Users\jsmith\Desktop\user.txt -Encoding ascii; \
-    'HTB{bfd7a04918e77c475d9e52c6f1082c5b}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii; \
+    'HTB{bfd7a04918e77c475d9e52c6f1082c5b}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii
     
 
 # Crear policy.txt
