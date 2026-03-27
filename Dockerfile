@@ -30,27 +30,18 @@ ADD https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.5.0.0p1-Bet
 RUN powershell -Command "Expand-Archive -Path C:/openssh.zip -DestinationPath C:/ ; Move-Item -Path C:/OpenSSH-Win64 -Destination C:/OpenSSH"
 RUN powershell -ExecutionPolicy Bypass -File C:/OpenSSH/install-sshd.ps1
 
-# ── 5. CONFIGURAR SSH — SOLO ADMINISTRATOR ──────────────────
-# Se escribe en sshd_config durante el build.
-# El CMD hace Restart-Service sshd para que tome efecto.
-RUN powershell -Command " \
-    $config = 'C:\OpenSSH\sshd_config'; \
-    Add-Content -Path $config -Value ''; \
-    Add-Content -Path $config -Value '# HTB: Solo Administrator puede usar SSH'; \
-    Add-Content -Path $config -Value 'AllowUsers Administrator'; \
-    Add-Content -Path $config -Value 'DenyUsers jsmith'; \
-    Write-Host '[SSH] sshd_config updated - Administrator only'"
-
-# ── 6. PRECARGAR MODELO IA ──────────────────────────────────
+# ── 5. PRECARGAR MODELO IA ──────────────────────────────────
 RUN C:\Python311\python.exe -c "import torch; from transformers import AutoTokenizer, AutoModelForCausalLM; \
     AutoTokenizer.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct', trust_remote_code=True); \
     AutoModelForCausalLM.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct', torch_dtype=torch.float32, trust_remote_code=True).to('cpu')"
 
-# ── 7. COPIAR CÓDIGO ─────────────────────────────────────────
+# ── 6. COPIAR CÓDIGO ─────────────────────────────────────────
 COPY . .
 
-# ── 8. USUARIOS Y FLAGS ──────────────────────────────────────
+# ── 7. USUARIOS Y FLAGS ──────────────────────────────────────
 RUN powershell -Command " \
+    $adminPass = ConvertTo-SecureString 'NexusAdmin2024!' -AsPlainText -Force; \
+    Set-LocalUser -Name 'Administrator' -Password $adminPass; \
     $pass = ConvertTo-SecureString 'Welcome1!' -AsPlainText -Force; \
     New-LocalUser -Name 'jsmith' -Password $pass -FullName 'James Smith - HR Junior'; \
     Add-LocalGroupMember -Group 'Users' -Member 'jsmith'; \
@@ -61,38 +52,31 @@ RUN powershell -Command " \
     'HTB{bfd7a04918e77c475d9e52c6f1082c5b}' | Out-File -FilePath C:\Users\Administrator\Desktop\root.txt -Encoding ascii; \
     'Nexus Dynamics Internal Policy v1.0' | Out-File -FilePath C:\HR-Docs\policy.txt -Encoding ascii"
 
-# ── 9. FALLO HUMANO (vector inicial) ─────────────────────────
+# ── 8. FALLO HUMANO (vector inicial) ─────────────────────────
 RUN powershell -Command " \
     New-Item -ItemType Directory -Force -Path C:\app\static; \
-    'USUARIO: jsmith'                    | Out-File -FilePath C:\app\static\todo.txt -Encoding ascii; \
-    'CLAVE: Welcome1!'                   | Out-File -FilePath C:\app\static\todo.txt -Append -Encoding ascii; \
+    'USUARIO: jsmith'                       | Out-File -FilePath C:\app\static\todo.txt -Encoding ascii; \
+    'CLAVE: Welcome1!'                      | Out-File -FilePath C:\app\static\todo.txt -Append -Encoding ascii; \
     'NOTA: James, no olvides cambiar esto.' | Out-File -FilePath C:\app\static\todo.txt -Append -Encoding ascii"
 
-# ── 10. GODPOTATO — Herramienta de privesc preinstalada ──────
-# El jugador la descubre via RCE y la usa para escalar a SYSTEM
-# Ruta intencionalmente "olvidada" por el sysadmin en C:\Tools
-RUN powershell -Command " \
-    New-Item -ItemType Directory -Force -Path C:\Tools; \
-    Write-Host '[Tools] C:\Tools ready for GodPotato'"
-# NOTA: Agrega GodPotato.exe a tu carpeta local antes del build
+# ── 9. GODPOTATO ─────────────────────────────────────────────
+RUN powershell -Command "New-Item -ItemType Directory -Force -Path C:\Tools"
 # COPY tools/GodPotato.exe C:/Tools/GodPotato.exe
 
-# ── 11. LIMPIAR SMB (no funciona en containers, quitar ruido) ─
-# Se elimina el fake SMB — puerto 445 descartado del scope
-# El Nmap solo mostrará: 8080 (HTTP) y 22 (SSH)
-
-# ── 12. PUERTOS ──────────────────────────────────────────────
+# ── 10. PUERTOS ──────────────────────────────────────────────
 EXPOSE 8080 22
 
-# ── 13. ARRANQUE ─────────────────────────────────────────────
+# ── 11. ARRANQUE ─────────────────────────────────────────────
 CMD powershell -Command " \
     \
-    # 1. Deshabilitar Guest \
+    # 1. Usuarios — deshabilitar Guest, bloquear jsmith en SSH \
     Disable-LocalUser -Name 'Guest' -ErrorAction SilentlyContinue; \
-    Write-Host '[Users] Guest disabled'; \
     \
-    # 2. SSH — Restart para aplicar sshd_config (AllowUsers Administrator / DenyUsers jsmith) \
-    Restart-Service sshd -Force; \
+    # 2. SSH — escribir config y arrancar \
+    Set-Content -Path C:\OpenSSH\sshd_config -Value 'AllowUsers Administrator'; \
+    Add-Content -Path C:\OpenSSH\sshd_config -Value 'PasswordAuthentication yes'; \
+    Add-Content -Path C:\OpenSSH\sshd_config -Value 'Subsystem sftp C:\OpenSSH\sftp-server.exe'; \
+    Start-Service sshd; \
     Write-Host '[SSH] Started - Administrator only'; \
     \
     # 3. WinRM \
@@ -102,6 +86,6 @@ CMD powershell -Command " \
     Set-Item WSMan:\localhost\Client\TrustedHosts      -Value '*'   -Force; \
     Write-Host '[WinRM] Started'; \
     \
-    # 4. Iniciar PeopleCore \
+    # 4. PeopleCore \
     Write-Host '[PeopleCore] Nexus Dynamics HR Services are ONLINE'; \
     C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app"
