@@ -1032,81 +1032,57 @@
         </div>
     </div>
 
-    <script>
-        const chatWindow = document.getElementById('chatWindow');
+   <script>
+        const chatWindow   = document.getElementById('chatWindow');
         const chatMessages = document.getElementById('chatMessages');
-        const botInput = document.getElementById('botInput');
-        const sendBtn = document.getElementById('sendBtn');
-
+        const botInput     = document.getElementById('botInput');
+        const sendBtn      = document.getElementById('sendBtn');
+ 
         function toggleChat() {
-            if (chatWindow.style.display === 'flex') {
-                chatWindow.style.display = 'none';
-            } else {
-                chatWindow.style.display = 'flex';
-                botInput.focus();
-            }
+            chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
+            if (chatWindow.style.display === 'flex') botInput.focus();
         }
-
-        function addBubble(role, text, psOutput = null) {
+ 
+        function addBubble(role, text) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `chat-message ${role}`;
-
-            let html = `<div class="chat-bubble">${text}</div>`;
-            if (psOutput) {
-                html += `<div class="ps-box">> PowerShell Output:\n${psOutput}</div>`;
-            }
-
-            msgDiv.innerHTML = html;
+            msgDiv.innerHTML = `<div class="chat-bubble">${text}</div>`;
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-
-        async function handleChat() {
+ 
+        // ============================================================
+        // CHAT DECORATIVO — Sin conexión al backend /api/chat
+        // Responde con frases hardcodeadas de demo corporativo.
+        // La IA real solo está disponible en el Employee Portal (/login)
+        // ============================================================
+        const DEMO_RESPONSES = [
+            "Thanks for your interest! For personalized HR assistance, please log in to the <a href='/login' style='color:var(--blue-glow)'>Employee Portal</a>.",
+            "Great question! Our AI HR Assistant can help with that once you're logged in. <a href='/login' style='color:var(--blue-glow)'>Access the portal here</a>.",
+            "PeopleCore handles that automatically. Employees can manage it directly through the <a href='/login' style='color:var(--blue-glow)'>Employee Portal</a>.",
+            "I'm the public demo assistant — I have limited capabilities. For full AI-powered support, <a href='/login' style='color:var(--blue-glow)'>sign in to your account</a>.",
+            "Our HR platform covers that and much more! <a href='/login' style='color:var(--blue-glow)'>Log in</a> to explore all features with the full AI assistant.",
+        ];
+ 
+        let demoIndex = 0;
+ 
+        function handleChat() {
             const message = botInput.value.trim();
             if (!message) return;
-
-            // 1. Mostrar mensaje del usuario
+ 
             addBubble('user', message);
             botInput.value = '';
-            
-            // 2. Indicador de carga
-            const typing = document.createElement('div');
-            typing.className = 'chat-message ai';
-            typing.id = 'typing-indicator';
-            typing.innerHTML = `<div class="chat-bubble" style="opacity:0.5; font-style: italic;">Procesando...</div>`;
-            chatMessages.appendChild(typing);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            try {
-                // 3. Llamada al backend
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
-                });
-
-                const data = await response.json();
-                
-                // 4. Eliminar indicador y mostrar respuesta
-                const indicator = document.getElementById('typing-indicator');
-                if (indicator) chatMessages.removeChild(indicator);
-
-                if (data.error) {
-                    addBubble('ai', `⚠️ Error: ${data.error}`);
-                } else {
-                    addBubble('ai', data.response, data.ps_output);
-                }
-            } catch (err) {
-                const indicator = document.getElementById('typing-indicator');
-                if (indicator) chatMessages.removeChild(indicator);
-                addBubble('ai', "❌ Error de conexión con el núcleo de PeopleCore. Intenta de nuevo.");
-            }
+ 
+            // Simular delay de "procesando"
+            setTimeout(() => {
+                const reply = DEMO_RESPONSES[demoIndex % DEMO_RESPONSES.length];
+                demoIndex++;
+                addBubble('ai', reply);
+            }, 600);
         }
-
+ 
         sendBtn.addEventListener('click', handleChat);
-        botInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleChat();
-        });
+        botInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleChat(); });
     </script>
 
 </body>
