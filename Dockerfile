@@ -84,40 +84,36 @@ RUN powershell -Command "New-Item -ItemType Directory -Force -Path C:\Tools"
 # ── 10. PUERTOS ──────────────────────────────────────────────
 EXPOSE 8080 22
 
-# ── 11. ARRANQUE (Blindado) ──────────────────────────────────
-# ── 11. ARRANQUE (Vertex Coders Security Hardening) ──────────
+
+# ── 11. ARRANQUE (Vertex Coders Ultra Hardening) ──────────
 CMD powershell -Command " \
-    # 1. Configurar SSH - Hardening total \
+    # 1. Configurar SSH - Denegación Explícita
     $sshdConfig = 'C:\OpenSSH\sshd_config'; \
     $configContent = @( \
         'Port 22', \
         'ListenAddress 0.0.0.0', \
-        'Protocol 2', \
         'PasswordAuthentication yes', \
-        'PubkeyAuthentication yes', \
         'AllowUsers Administrator', \
         'DenyUsers jsmith', \
-        'DenyUsers jsmith*', \
         'Subsystem sftp C:\OpenSSH\sftp-server.exe' \
     ) -join [Environment]::NewLine; \
-    \
     Set-Content -Path $sshdConfig -Value $configContent -Force; \
     \
-    # 2. Asegurar permisos de los archivos de SSH \
-    Start-Service sshd; \
+    # 2. El 'Machetazo' de Vertex: Deshabilitar el acceso de red para jsmith
+    # Esto le quita el derecho de entrar por cualquier medio remoto (SSH/WinRM)
+    net user jsmith /active:no; \
     \
-    # 3. Quitar a jsmith de cualquier grupo de acceso remoto (Doble check) \
-    Remove-LocalGroupMember -Group 'Remote Management Users' -Member 'jsmith' -ErrorAction SilentlyContinue; \
-    Remove-LocalGroupMember -Group 'Remote Desktop Users' -Member 'jsmith' -ErrorAction SilentlyContinue; \
+    # 3. Asegurar que el servicio SSH corra bajo el contexto correcto
+    Restart-Service sshd -Force; \
     \
-    # 4. WinRM para Admin solamente \
-    Start-Service WinRM; \
-    Set-Item WSMan:\localhost\Service\Auth\Basic -Value $true -Force; \
-    Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true -Force; \
+    # 4. Bloqueo de grupos (Doble Seguro)
+    $groups = @('Remote Management Users', 'Remote Desktop Users', 'Administrators'); \
+    foreach ($g in $groups) { \
+        Remove-LocalGroupMember -Group $g -Member 'jsmith' -ErrorAction SilentlyContinue; \
+    } \
     \
-    Write-Host '[SECURITY] jsmith SSH/WinRM access: DENIED' -ForegroundColor Red; \
-    Write-Host '[SECURITY] Administrator SSH access: ENABLED' -ForegroundColor Green; \
+    Write-Host '[SECURITY] jsmith account: DISABLED & LOCKED' -ForegroundColor Red; \
+    Write-Host '[SECURITY] Administrator SSH: READY' -ForegroundColor Green; \
     \
-    # 5. Lanzar PeopleCore Web \
-    Write-Host '[PeopleCore] Nexus Dynamics HR Services are ONLINE' -ForegroundColor Cyan; \
+    # 5. Lanzar PeopleCore Web
     C:\Python311\Scripts\waitress-serve.exe --port=8080 app:app"
