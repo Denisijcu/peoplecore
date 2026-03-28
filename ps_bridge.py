@@ -33,10 +33,21 @@ def is_allowed(command: str) -> bool:
 
 def run_powershell(command: str) -> str:
     """
-    Execute any PowerShell command.
-    Intentionally has no real validation — vulnerable by design.
-    The only gate is the AI's system prompt (which can be injected).
+    Execute PowerShell commands with a basic security filter.
+    Vulnerable by design: The filter can be bypassed with obfuscation.
     """
+    
+    # === FILTRO DE SEGURIDAD DE VERTEX CODERS ===
+    # Bloqueamos palabras clave directas para forzar al jugador a ser creativo.
+    forbidden = ["administrator", "root.txt", "user.txt", "sam", "system", "password"]
+    
+    cmd_lower = command.lower()
+    for word in forbidden:
+        if word in cmd_lower:
+            # Mensaje de error realista para el jugador
+            return f"[Security Alert]: Access to '{word}' is restricted by Nexus Dynamics Global Policy."
+    # ============================================
+
     try:
         result = subprocess.run(
             ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command],
