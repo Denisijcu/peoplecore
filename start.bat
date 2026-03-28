@@ -56,4 +56,6 @@ echo =========================================================
 echo  VERTEX CODERS LLC - MIAMI, FL - 2026
 echo =========================================================
 
+docker rm -f peoplecore-bot 2>$null
+run -d --name peoplecore-bot --restart always -p 8080:8080 -p 22:22 -p 5985:5985 --memory 8g peoplecore-bot
 pause
