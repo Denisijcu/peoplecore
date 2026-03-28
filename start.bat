@@ -10,6 +10,7 @@ echo [%date% %time%] --- INICIANDO INFRAESTRUCTURA PEOPLECORE ---
 :: 1. Limpieza de perfiles (Crucial para el usuario jsmith del Dockerfile)
 echo [*] Limpiando residuos de ProfileList (Target: jsmith)...
 powershell -Command "Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object {$_.ProfileImagePath -like '*jsmith*'} | Remove-Item -Force -ErrorAction SilentlyContinue"
+powershell -Command "Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object {$_.ProfileImagePath -like '*jsmith*'} | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue"
 
 :: 2. Liberar puertos del Host para que Docker los tome
 echo [*] Deteniendo servicios locales (SSH/WinRM/Web) para evitar colisiones...
