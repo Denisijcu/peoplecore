@@ -1,44 +1,45 @@
 @echo off
 SETLOCAL
 REM =========================================================
-REM  VERTEX CODERS - PEOPLECORE HTB AUTO-START (ADAPTADO)
-REM  Proyecto: VIC / PeopleCore
+REM  VERTEX CODERS - PEOPLECORE HTB (PRODUCTION DEPLOY)
 REM  Escrito por: Denis Sanchez Leyva (CEO)
 REM =========================================================
 
-echo [%date% %time%] --- INICIANDO DESPLIEGUE VERTEX (NUEVO NOMBRE) ---
+echo [%date% %time%] --- INICIANDO INFRAESTRUCTURA PEOPLECORE ---
 
-:: 1. Limpieza de perfiles huerfanos (Evita el error .BA612...)
-echo [*] Limpiando residuos de perfiles en el registro...
+:: 1. Limpieza de perfiles (Crucial para el usuario jsmith del Dockerfile)
+echo [*] Limpiando residuos de ProfileList (Target: jsmith)...
 powershell -Command "Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object {$_.ProfileImagePath -like '*jsmith*'} | Remove-Item -Force -ErrorAction SilentlyContinue"
 
-:: 2. Detener servicios que chocan con los puertos del contenedor
-echo [*] Liberando puertos (SSH y WinRM)...
-powershell -Command "Stop-Service sshd -ErrorAction SilentlyContinue"
-powershell -Command "Stop-Service WinRM -ErrorAction SilentlyContinue"
+:: 2. Liberar puertos del Host para que Docker los tome
+echo [*] Deteniendo servicios locales (SSH/WinRM/Web) para evitar colisiones...
+powershell -Command "Stop-Service sshd, WinRM -ErrorAction SilentlyContinue"
 
-:: 3. Limpiar contenedor anterior si existe (Usando el nuevo nombre)
-echo [*] Removiendo instancias viejas de PeopleCore-Bot...
-docker rm -f peoplecore-bot 2>nul
+:: 3. Limpieza de contenedores anteriores
+echo [*] Removiendo instancias previas de PeopleCore...
+docker rm -f peoplecore-final 2>nul
 
-:: 4. Lanzar el contenedor con los puertos y recursos de Vertex
-:: Nota: Mantenemos el tag peoplecore-bot que ya tienes buildeado
-echo [*] Lanzando PeopleCore (Puertos: 8080, 22, 5985)...
-echo [*] Memoria asignada: 8GB | Auto-restart: Always
+:: 4. Lanzar el contenedor con la configuracion del Dockerfile
+:: Exponemos 8080 (Web), 22 (SSH Admin) y 5985 (WinRM Admin)
+echo [*] Lanzando PeopleCore (Nexus Dynamics HR Services)...
+echo [*] Recursos: 8GB RAM | Modelo: Qwen2.5-0.5B
 docker run -d ^
-  --name peoplecore-bot ^
+  --name peoplecore-final ^
   --restart always ^
   -p 8080:8080 ^
   -p 22:22 ^
   -p 5985:5985 ^
   --memory 8g ^
-  peoplecore-bot
+  peoplecore:final
 
-:: 5. Verificacion final
+:: 5. Verificacion de Seguridad Vertex
 echo.
-echo [%date% %time%] --- DESPLIEGUE COMPLETADO ---
-echo Verificando logs del contenedor...
-timeout /t 5 >nul
-docker ps --filter "name=peoplecore-bot"
+echo [%date% %time%] --- DESPLIEGUE VERTEX COMPLETADO ---
+echo Verificando que el bot de IA y el Web Service esten ONLINE...
+timeout /t 10 >nul
+docker ps --filter "name=peoplecore-final"
+echo.
+echo [!] Recordatorio: jsmith no tiene acceso SSH (DenyUsers en Dockerfile)
+echo [!] Credenciales: administrator / NexusAdmin2024!
 
 pause
