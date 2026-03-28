@@ -3,7 +3,7 @@ SETLOCAL
 REM =========================================================
 REM  VERTEX CODERS - PEOPLECORE HTB (OFFICIAL DEPLOY)
 REM  CEO: Denis Sanchez Leyva
-REM  Imagen: peoplecore-bot | Contenedor: peoplecore-final
+REM  Fix: Uniform naming to 'peoplecore-bot'
 REM =========================================================
 
 echo [%date% %time%] --- INICIANDO INFRAESTRUCTURA PEOPLECORE ---
@@ -17,24 +17,22 @@ if %ERRORLEVEL% NEQ 0 (
     timeout /t 15 /nobreak >nul
 )
 
-:: 1. LIMPIEZA DE PERFILES (Evitar persistencia de jsmith en el Host)
-echo [*] Purgando SIDs de 'jsmith' en ProfileList (Registry)...
+:: 1. LIMPIEZA DE PERFILES (jsmith)
+echo [*] Purgando SIDs de 'jsmith' en el Registro...
 powershell -Command "Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object {$_.ProfileImagePath -like '*jsmith*'} | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue"
 
-:: 2. LIBERAR PUERTOS (Evitar colisiones con SSH/WinRM nativos)
-echo [*] Bajando servicios locales para liberar puertos 22 y 5985...
+:: 2. LIBERAR PUERTOS
+echo [*] Deteniendo SSH/WinRM locales para evitar colisiones...
 powershell -Command "Stop-Service sshd, WinRM -Force -ErrorAction SilentlyContinue"
-powershell -Command "Set-Service sshd, WinRM -StartupType Disabled -ErrorAction SilentlyContinue"
 
-:: 3. LIMPIEZA DE CONTENEDORES
-echo [*] Removiendo instancias previas de 'peoplecore-final'...
-docker rm -f peoplecore-final 2>nul
+:: 3. LIMPIEZA DE CONTENEDORES (Usando el nombre correcto)
+echo [*] Removiendo instancias previas de 'peoplecore-bot'...
+docker rm -f peoplecore-bot 2>nul
 
-:: 4. DESPLIEGUE DE IMAGEN (Nombre corregido: peoplecore-bot)
+:: 4. LANZAR CONTENEDOR (Nombre: peoplecore-bot | Imagen: peoplecore-bot)
 echo [*] Lanzando PeopleCore (Nexus Dynamics HR Services)...
-echo [*] Imagen: peoplecore-bot | RAM: 8GB | Ports: 8080, 22, 5985
 docker run -d ^
-  --name peoplecore-final ^
+  --name peoplecore-bot ^
   --restart always ^
   -p 8080:8080 ^
   -p 22:22 ^
@@ -42,20 +40,9 @@ docker run -d ^
   --memory 8g ^
   peoplecore-bot
 
-:: 5. VERIFICACION FINAL
+:: 5. VERIFICACION
 echo.
-echo [%date% %time%] --- VERIFICACION DE SEGURIDAD VERTEX ---
-timeout /t 12 >nul
-docker ps --filter "name=peoplecore-final"
-
-echo.
-echo [STATUS] PeopleCore Engine: ONLINE
-echo [POLICY] User 'jsmith': SSH ACCESS REVOKED
-echo [POLICY] User 'administrator': SSH/WinRM ACCESS GRANTED
-echo =========================================================
-echo  VERTEX CODERS LLC - MIAMI, FL - 2026
-echo =========================================================
-
-docker rm -f peoplecore-bot 2>$null
-run -d --name peoplecore-bot --restart always -p 8080:8080 -p 22:22 -p 5985:5985 --memory 8g peoplecore-bot
+echo [%date% %time%] --- DESPLIEGUE VERTEX COMPLETADO ---
+timeout /t 5 >nul
+docker ps --filter "name=peoplecore-bot"
 pause
